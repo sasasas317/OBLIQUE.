@@ -1,2 +1,36 @@
-{% extends 'shop/base.html' %}{% block title %}Коллекция — OBLIQUE{% endblock %}{% block content %}<div class="page-intro"><span class="eyebrow">Исследуйте / 2026</span><h1>Коллекция<span class="accent">.</span></h1><p>Выбор вне времени и правил.</p></div><section class="section-pad catalog-layout"><form class="filters glass" method="get"><label>Поиск<input name="q" value="{{ request.args.get('q','') }}" placeholder="Название товара"></label><label>Дизайнер<select name="brand"><option value="">Все дизайнеры</option>{% for brand in brands %}<option value="{{ brand.slug }}" {% if request.args.get('brand')==brand.slug %}selected{% endif %}>{{ brand.name }}</option>{% endfor %}</select></label><label>Категория<select name="category"><option value="">Все категории</option>{% for category in categories %}<option value="{{ category.slug }}" {% if request.args.get('category')==category.slug %}selected{% endif %}>{{ category.name }}</option>{% endfor %}</select></label><label>Размер<select name="size"><option value="">Все размеры</option>{% for size in ['XS','S','M','L','XL'] %}<option {% if request.args.get('size')==size %}selected{% endif %}>{{ size }}</option>{% endfor %}</select></label><label>Цена до, €<input type="number" min="0" step="1" name="max_price" value="{{ request.args.get('max_price','') }}" placeholder="Любая"></label><button class="button button-dark" type="submit">Применить ↗</button><a class="reset" href="{{ url_for('shop.catalog') }}">Сбросить фильтры</a></form><div class="catalog-results"><div class="result-count">Найдено: {{ products|length }}</div><div class="product-grid">{% include 'shop/_cards.html' %}</div>{% if not products %}<p>По вашему запросу пока ничего нет.</p>{% endif %}</div></section>{% endblock %}
-{# Форма фильтров отправляет параметры GET; набор товаров формирует shop.catalog(). #}
+{% extends 'shop/base.html' %}
+{% block title %}Коллекция — OBLIQUE{% endblock %}
+{% block content %}
+<div class="page-intro">
+  <span class="eyebrow">Исследуйте / 2026</span>
+  <h1>Коллекция<span class="accent">.</span></h1>
+  <p>Выбор вне времени и правил.</p>
+</div>
+<section class="section-pad catalog-layout">
+  <form class="filters glass" method="get">
+    <label>Поиск<input name="q" value="{{ request.args.get('q', '') }}" placeholder="Название товара"></label>
+    <label>Дизайнер<select name="brand">
+      <option value="">Все дизайнеры</option>
+      {% for brand in brands %}<option value="{{ brand.slug }}" {% if request.args.get('brand') == brand.slug %}selected{% endif %}>{{ brand.name }}</option>{% endfor %}
+    </select></label>
+    <label>Категория<select name="category">
+      <option value="">Все категории</option>
+      {% for category in categories %}<option value="{{ category.slug }}" {% if request.args.get('category') == category.slug %}selected{% endif %}>{{ category.name }}</option>{% endfor %}
+    </select></label>
+    {# Обувь и одежда используют разные системы размеров, поэтому показываем обе. #}
+    <label>Размер<select name="size">
+      <option value="">Все размеры</option>
+      <optgroup label="Одежда">{% for size in clothing_sizes %}<option value="{{ size }}" {% if request.args.get('size') == size %}selected{% endif %}>{{ size }}</option>{% endfor %}</optgroup>
+      <optgroup label="Обувь · EU">{% for size in shoe_sizes %}<option value="{{ size }}" {% if request.args.get('size') == size %}selected{% endif %}>{{ size }}</option>{% endfor %}</optgroup>
+    </select></label>
+    <label>Цена до, €<input type="number" min="0" step="1" name="max_price" value="{{ request.args.get('max_price', '') }}" placeholder="Любая"></label>
+    <button class="button button-dark" type="submit">Применить ↗</button>
+    <a class="reset" href="{{ url_for('shop.catalog') }}">Сбросить фильтры</a>
+  </form>
+  <div class="catalog-results">
+    <div class="result-count">Найдено: {{ products|length }}</div>
+    <div class="product-grid">{% include 'shop/_cards.html' %}</div>
+    {% if not products %}<p>По вашему запросу пока ничего нет.</p>{% endif %}
+  </div>
+</section>
+{% endblock %}

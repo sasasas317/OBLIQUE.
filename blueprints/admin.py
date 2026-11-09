@@ -11,6 +11,7 @@ from sqlalchemy.exc import IntegrityError
 from models import Admin, AdminLog, Brand, Category, Order, OrderItem, Product, ProductImage, ProductSize, db
 from utils import admin_log, save_image, slugify
 from extensions import limiter
+from catalog_constants import CLOTHING_SIZES, SHOE_SIZES
 
 admin = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -166,11 +167,18 @@ def products():
     """Создание товара с размерами и несколькими изображениями."""
     if request.method == "POST":
         brand = db.get_or_404(Brand, int(request.form["brand_id"]))
-        product = Product(brand_id=brand.id, category_id=int(request.form["category_id"]), name=request.form["name"].strip(), slug=slugify(request.form.get("slug") or request.form["name"]), price=request.form["price"], description=request.form.get("description"), status=request.form.get("status", "published"))
+        category = db.get_or_404(Category, int(request.form["category_id"]))
+        product = Product(brand_id=brand.id, category_id=category.id, name=request.form["name"].strip(), slug=slugify(request.form.get("slug") or request.form["name"]), price=request.form["price"], description=request.form.get("description"), status=request.form.get("status", "published"))
         db.session.add(product)
         db.session.flush()
+        # Обувь маркируется EU-размерами; это проверяем и на сервере, а не только в JS.
+        allowed_sizes = set(SHOE_SIZES if category.slug == "shoes" else CLOTHING_SIZES)
         for size, stock in zip(request.form.getlist("size"), request.form.getlist("stock")):
             if size.strip():
+                if size.strip() not in allowed_sizes:
+                    db.session.rollback()
+                    flash("Выберите размеры, подходящие категории товара", "error")
+                    return redirect(url_for("admin.products"))
                 db.session.add(ProductSize(product_id=product.id, size=size.strip(), stock=max(0, int(stock or 0))))
         try:
             add_images(product, brand, request.files.getlist("images"))
@@ -194,7 +202,7 @@ def products():
         if request.args.get(field):
             query = query.filter(getattr(Product, field) == request.args[field])
     page = query.order_by(Product.created_at.desc()).paginate(page=request.args.get("page", 1, type=int), per_page=15, error_out=False)
-    return render_template("admin/products.html", products=page.items, pagination=page, brands=Brand.query.all(), categories=Category.query.all())
+    return render_template("admin/products.html", products=page.items, pagination=page, brands=Brand.query.all(), categories=Category.query.all(), clothing_sizes=CLOTHING_SIZES, shoe_sizes=SHOE_SIZES)
 
 
 def add_images(product, brand, uploads):

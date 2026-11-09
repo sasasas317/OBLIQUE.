@@ -8,10 +8,12 @@ from sqlalchemy.engine import make_url
 from app import app
 from models import Brand, Category, Product, ProductSize, Admin, db
 from utils import slugify
+from catalog_constants import CLOTHING_SIZES, SHOE_SIZES
 
 
 BRANDS = ["Maison Margiela", "Balenciaga", "Rick Owens", "Yohji Yamamoto", "Raf Simons", "Comme des Garçons", "Carol Christian Poell"]
 PRODUCT_TYPES = [("Edition Coat", "outerwear"), ("Archive Trouser", "trousers"), ("Sculpted Sneaker", "shoes"), ("Studio Shirt", "shirts")]
+# Порядок нужен и для новых товаров, и для разового переноса старых остатков.
 # Учебные цены различаются по дизайнерам; это не заявленные розничные цены.
 SEED_PRICES = {
     "Maison Margiela": (1280, 690, 795, 425),
@@ -54,7 +56,7 @@ def seed():
                     product = Product(brand_id=brand.id, category_id=categories[category_slug].id, name=f"{brand_name} {kind}", slug=slug, price=Decimal(SEED_PRICES[brand_name][offset - 1]), description="A quiet, precise object designed for an intentional wardrobe.")
                     db.session.add(product)
                     db.session.flush()
-                    for size in ("XS", "S", "M", "L", "XL"):
+                    for size in (SHOE_SIZES if category_slug == "shoes" else CLOTHING_SIZES):
                         db.session.add(ProductSize(product_id=product.id, size=size, stock=5 + offset))
         # Пароль записывается только при первом создании админа и не сбрасывается seed.
         email = os.getenv("ADMIN_EMAIL", "admin@example.com")

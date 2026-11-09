@@ -4,6 +4,7 @@ from decimal import Decimal
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for
 from sqlalchemy import or_
 from models import Brand, Category, Product, ProductSize, Order, OrderItem, db
+from catalog_constants import CLOTHING_SIZES, SHOE_SIZES
 
 shop = Blueprint("shop", __name__)
 
@@ -48,7 +49,7 @@ def catalog():
             pass
     if request.args.get("size"):
         query = query.join(ProductSize).filter(ProductSize.size == request.args["size"], ProductSize.stock > 0)
-    return render_template("shop/catalog.html", products=query.order_by(Product.created_at.desc()).all(), brands=Brand.query.all(), categories=Category.query.all())
+    return render_template("shop/catalog.html", products=query.order_by(Product.created_at.desc()).all(), brands=Brand.query.all(), categories=Category.query.all(), clothing_sizes=CLOTHING_SIZES, shoe_sizes=SHOE_SIZES)
 
 
 @shop.get("/brand/<slug>")
