@@ -1,0 +1,2 @@
+{% extends 'shop/base.html' %}{% block content %}<section class="simple-page success"><span class="eyebrow">Ошибка / 404</span><h1>Не найдено<span class="accent">.</span></h1><p>Похоже, этой страницы больше нет.</p><a class="button button-dark" href="{{ url_for('shop.home') }}">На главную ↗</a></section>{% endblock %}
+{# Единая страница для неизвестных URL и скрытых/несуществующих товаров. #}

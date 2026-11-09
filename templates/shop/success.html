@@ -1,0 +1,2 @@
+{% extends 'shop/base.html' %}{% block content %}<section class="simple-page success"><span class="eyebrow">Заказ принят</span><h1>Благодарим<span class="accent">.</span></h1><p>Заказ №{{ order.id }} оформлен. Мы свяжемся с вами по указанному адресу.</p><a class="button button-dark" href="{{ url_for('shop.home') }}">На главную ↗</a></section>{% endblock %}
+{# Подтверждение показывается только после сохранения заказа. #}
