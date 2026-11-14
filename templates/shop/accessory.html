@@ -1,0 +1,26 @@
+{% extends "shop/base.html" %}
+
+{% block title %}{{ accessory.name }} — OBLIQUE{% endblock %}
+
+{% block content %}
+  <section class="accessory-detail section-pad">
+    <div class="accessory-detail-visual glass">
+      {% if accessory.image %}
+        <img src="{{ url_for('static', filename='img/accessories/' + accessory.image) }}"
+             alt="{{ accessory.name }}">
+      {% else %}
+        <span class="luxury-placeholder">OBLIQUE</span>
+      {% endif %}
+    </div>
+    <div class="accessory-detail-info">
+      <a class="eyebrow text-link" href="{{ url_for('shop.accessories') }}">Аксессуары ↗</a>
+      <h1>{{ accessory.name }}</h1>
+      <p class="detail-price">{{ accessory.price }} €</p>
+      {% if accessory.description %}<p class="description">{{ accessory.description }}</p>{% endif %}
+      {% if accessory.designer %}<p class="eyebrow">{{ accessory.designer.name }}</p>{% endif %}
+      <form class="add-to-cart" data-accessory-id="{{ accessory.id }}">
+        <button class="button button-dark" type="submit">Добавить в корзину <span>↗</span></button>
+      </form>
+    </div>
+  </section>
+{% endblock %}

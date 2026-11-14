@@ -6,24 +6,59 @@ from pathlib import Path
 import pymysql
 from sqlalchemy.engine import make_url
 from app import app
-from models import Brand, Category, Product, ProductSize, Admin, db
+from models import Accessory, Admin, Brand, Category, Product, ProductSize, db
 from utils import slugify
 from catalog_constants import CLOTHING_SIZES, SHOE_SIZES
 
 
 BRANDS = ["Maison Margiela", "Balenciaga", "Rick Owens", "Yohji Yamamoto", "Raf Simons", "Comme des Garçons", "Carol Christian Poell"]
+ACCESSORY_BRANDS = ["Chrome Hearts", "Prada"]
 PRODUCT_TYPES = [("Edition Coat", "outerwear"), ("Archive Trouser", "trousers"), ("Sculpted Sneaker", "shoes"), ("Studio Shirt", "shirts")]
 # Порядок нужен и для новых товаров, и для разового переноса старых остатков.
-# Учебные цены различаются по дизайнерам; это не заявленные розничные цены.
+# Ориентировочные розничные цены в евро для luxury-сегмента.
 SEED_PRICES = {
-    "Maison Margiela": (1280, 690, 795, 425),
-    "Balenciaga": (2190, 1150, 1090, 790),
-    "Rick Owens": (1890, 930, 1175, 620),
-    "Yohji Yamamoto": (1650, 760, 680, 510),
-    "Raf Simons": (1450, 850, 970, 580),
-    "Comme des Garçons": (1320, 715, 640, 490),
-    "Carol Christian Poell": (2890, 1480, 1590, 940),
+    "Maison Margiela": (3200, 1250, 980, 620),
+    "Balenciaga": (4500, 2100, 1450, 950),
+    "Rick Owens": (3900, 1800, 1650, 850),
+    "Yohji Yamamoto": (3500, 1550, 1200, 760),
+    "Raf Simons": (3100, 1700, 1350, 820),
+    "Comme des Garçons": (2800, 1350, 1050, 690),
+    "Carol Christian Poell": (5200, 2400, 2100, 1200),
 }
+
+# Узнаваемые модели и линейки реальных брендов; цены ориентировочные и нужны для демо-каталога.
+ACCESSORIES = (
+    {
+        "brand": "Chrome Hearts",
+        "name": "CH Plus Bracelet",
+        "price": Decimal("3200"),
+        "description": "Серебряный браслет с фирменным мотивом CH Plus.",
+    },
+    {
+        "brand": "Chrome Hearts",
+        "name": "Cemetery Cross Ring",
+        "price": Decimal("2400"),
+        "description": "Кольцо из стерлингового серебра с мотивом Cemetery Cross.",
+    },
+    {
+        "brand": "Maison Margiela",
+        "name": "Four Stitches Card Holder",
+        "price": Decimal("680"),
+        "description": "Кожаный кардхолдер с четырьмя белыми стежками Maison Margiela.",
+    },
+    {
+        "brand": "Prada",
+        "name": "Re-Nylon Bucket Hat",
+        "price": Decimal("1150"),
+        "description": "Лаконичная панама из фирменного переработанного Re-Nylon.",
+    },
+    {
+        "brand": "Prada",
+        "name": "Saffiano Card Holder",
+        "price": Decimal("820"),
+        "description": "Кардхолдер из фактурной кожи Saffiano с эмблемой Prada.",
+    },
+)
 
 
 def seed():
@@ -58,6 +93,33 @@ def seed():
                     db.session.flush()
                     for size in (SHOE_SIZES if category_slug == "shoes" else CLOTHING_SIZES):
                         db.session.add(ProductSize(product_id=product.id, size=size, stock=5 + offset))
+
+        # Бренды аксессуаров не получают одежду: они нужны только для связей карточек аксессуаров.
+        accessory_brands = {}
+        for brand_name in ACCESSORY_BRANDS:
+            brand = Brand.query.filter_by(slug=slugify(brand_name)).first()
+            if not brand:
+                brand = Brand(
+                    name=brand_name,
+                    slug=slugify(brand_name),
+                    country="International",
+                    description="Signature accessories and considered objects.",
+                )
+                db.session.add(brand)
+                db.session.flush()
+            accessory_brands[brand_name] = brand
+
+        for data in ACCESSORIES:
+            if not Accessory.query.filter_by(name=data["name"]).first():
+                db.session.add(
+                    Accessory(
+                        name=data["name"],
+                        price=data["price"],
+                        description=data["description"],
+                        designer=accessory_brands.get(data["brand"])
+                        or Brand.query.filter_by(name=data["brand"]).one(),
+                    )
+                )
         # Пароль записывается только при первом создании админа и не сбрасывается seed.
         email = os.getenv("ADMIN_EMAIL", "admin@example.com")
         admin = Admin.query.filter_by(email=email).first()

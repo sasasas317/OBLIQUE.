@@ -1,2 +1,70 @@
-{% extends 'admin/base.html' %}{% block content %}<div class="page-heading"><h1>Редактировать товар</h1></div><div class="panel glass edit-panel"><form method="post" enctype="multipart/form-data"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Название<input name="name" value="{{ product.name }}" required></label><label>Slug<input name="slug" value="{{ product.slug }}" required></label><label>Бренд<select name="brand_id">{% for brand in brands %}<option value="{{ brand.id }}" {% if brand.id==product.brand_id %}selected{% endif %}>{{ brand.name }}</option>{% endfor %}</select></label><label>Категория<select name="category_id">{% for category in categories %}<option value="{{ category.id }}" {% if category.id==product.category_id %}selected{% endif %}>{{ category.name }}</option>{% endfor %}</select></label><label>Цена<input type="number" min="0" step=".01" name="price" value="{{ product.price }}" required></label><label>Описание<textarea name="description">{{ product.description or '' }}</textarea></label><label>Статус<select name="status"><option value="published" {% if product.status=='published' %}selected{% endif %}>Опубликован</option><option value="hidden" {% if product.status=='hidden' %}selected{% endif %}>Скрыт</option></select></label><h2>Размеры и остатки {% if product.category.slug == 'shoes' %}(EU){% endif %}</h2>{% for size in product.sizes %}<label>{{ size.size }}<input type="number" min="0" name="stock_{{ size.id }}" value="{{ size.stock }}"></label>{% endfor %}<div class="size-row"><input name="new_size" placeholder="Новый размер {% if product.category.slug == 'shoes' %}(например, 44){% endif %}"><input name="new_stock" type="number" min="0" value="0" aria-label="Остаток нового размера"></div><h2>Изображения</h2>{% for image in product.images %}<div class="image-row"><img src="{{ url_for('static',filename=image.thumb_path or image.path) }}" alt="{{ product.name }}"><label>Порядок<input type="number" min="0" name="position_{{ image.id }}" value="{{ image.position }}"></label><label>Главное<input type="radio" name="primary_image" value="{{ image.id }}" {% if image.is_primary %}checked{% endif %}></label><button type="submit" class="link-danger" form="delete-image-{{ image.id }}">Удалить</button></div>{% endfor %}<label>Добавить фотографии<input type="file" name="images" multiple accept="image/jpeg,image/png,image/webp"></label><button class="btn" type="submit">Сохранить изменения</button></form>{% for image in product.images %}<form id="delete-image-{{ image.id }}" action="{{ url_for('admin.delete_image',image_id=image.id) }}" method="post" data-confirm="Удалить изображение?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"></form>{% endfor %}</div>{% endblock %}
+{% extends 'admin/base.html' %}{% block content %}<div class="page-heading"><h1>Редактировать товар</h1></div><div class="panel glass edit-panel"><form method="post" enctype="multipart/form-data"><input
+  type="hidden"
+  name="csrf_token"
+  value="{{ csrf_token() }}"
+><label>Название<input name="name" value="{{ product.name }}" required></label><label>Slug<input name="slug" value="{{ product.slug }}" required></label><label>Бренд<select name="brand_id">{% for brand in brands %}<option
+  value="{{ brand.id }}"
+  {% if brand.id==product.brand_id %}selected{% endif %}
+>{{ brand.name }}</option>{% endfor %}</select></label><label>Категория<select name="category_id">{% for category in categories %}<option
+  value="{{ category.id }}"
+  {% if category.id==product.category_id %}selected{% endif %}
+>{{ category.name }}</option>{% endfor %}</select></label><label>Цена<input
+  type="number"
+  min="0"
+  step=".01"
+  name="price"
+  value="{{ product.price }}"
+  required
+></label><label>Описание<textarea name="description">{{ product.description or '' }}</textarea></label><label>Статус<select name="status"><option
+  value="published"
+  {% if product.status=='published' %}selected{% endif %}
+>Опубликован</option><option
+  value="hidden"
+  {% if product.status=='hidden' %}selected{% endif %}
+>Скрыт</option></select></label><h2>Размеры и остатки {% if product.category.slug == 'shoes' %}(EU){% endif %}</h2>{% for size in product.sizes %}<label>{{ size.size }}<input
+  type="number"
+  min="0"
+  name="stock_{{ size.id }}"
+  value="{{ size.stock }}"
+></label>{% endfor %}<div class="size-row"><input
+  name="new_size"
+  placeholder="Новый размер {% if product.category.slug == 'shoes' %}(например, 44){% endif %}"
+><input
+  name="new_stock"
+  type="number"
+  min="0"
+  value="0"
+  aria-label="Остаток нового размера"
+></div><h2>Изображения</h2>{% for image in product.images %}<div class="image-row"><img
+  src="{{ url_for('static',filename=image.thumb_path or image.path) }}"
+  alt="{{ product.name }}"
+><label>Порядок<input
+  type="number"
+  min="0"
+  name="position_{{ image.id }}"
+  value="{{ image.position }}"
+></label><label>Главное<input
+  type="radio"
+  name="primary_image"
+  value="{{ image.id }}"
+  {% if image.is_primary %}checked{% endif %}
+></label><button
+  type="submit"
+  class="link-danger"
+  form="delete-image-{{ image.id }}"
+>Удалить</button></div>{% endfor %}<label>Добавить фотографии<input
+  type="file"
+  name="images"
+  multiple
+  accept="image/jpeg,image/png,image/webp"
+></label><button class="btn" type="submit">Сохранить изменения</button></form>{% for image in product.images %}<form
+  id="delete-image-{{ image.id }}"
+  action="{{ url_for('admin.delete_image',image_id=image.id) }}"
+  method="post"
+  data-confirm="Удалить изображение?"
+><input
+  type="hidden"
+  name="csrf_token"
+  value="{{ csrf_token() }}"
+></form>{% endfor %}</div>{% endblock %}
 {# Остатки по размерам, позиции фото и главное изображение сохраняются через POST. #}

@@ -1,2 +1,6 @@
-{% extends 'admin/base.html' %}{% block content %}<div class="page-heading"><h1>Редактировать бренд</h1></div><div class="panel glass edit-panel"><form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Название<input name="name" value="{{ brand.name }}" required></label><label>Slug<input name="slug" value="{{ brand.slug }}" required></label><label>Страна<input name="country" value="{{ brand.country or '' }}"></label><label>Описание<textarea name="description" rows="5">{{ brand.description or '' }}</textarea></label><button class="btn">Сохранить</button></form></div>{% endblock %}
+{% extends 'admin/base.html' %}{% block content %}<div class="page-heading"><h1>Редактировать бренд</h1></div><div class="panel glass edit-panel"><form method="post"><input
+  type="hidden"
+  name="csrf_token"
+  value="{{ csrf_token() }}"
+><label>Название<input name="name" value="{{ brand.name }}" required></label><label>Slug<input name="slug" value="{{ brand.slug }}" required></label><label>Страна<input name="country" value="{{ brand.country or '' }}"></label><label>Описание<textarea name="description" rows="5">{{ brand.description or '' }}</textarea></label><button class="btn">Сохранить</button></form></div>{% endblock %}
 {# Изменение данных бренда; slug применяется в URL его публичной страницы. #}

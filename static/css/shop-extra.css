@@ -1,2 +1,220 @@
 /* Дополнительные состояния: ручная светлая тема, focus и сниженная прозрачность. */
-body.light{--bg:#e8e3dc;--ink:#171717;--muted:#77736e;--line:rgba(23,23,23,.14);--glass:rgba(255,255,255,.42);--glass-border:rgba(255,255,255,.65);color-scheme:light}.toast[hidden]{display:none}.site-header a:focus-visible,.site-header button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #aa4e64;outline-offset:3px}.gallery{cursor:grab}.gallery:active{cursor:grabbing}.cart-toggle:active,.button:active{transform:scale(.97)}@media(prefers-reduced-transparency:reduce),(prefers-contrast:more){.glass{background:var(--bg);backdrop-filter:none;-webkit-backdrop-filter:none}}@media(max-width:500px){.glass{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}}
+body.light {
+  --bg: #e8e3dc;
+  --ink: #171717;
+  --muted: #77736e;
+  --line: rgba(23, 23, 23, 0.14);
+  --glass: rgba(255, 255, 255, 0.42);
+  --glass-border: rgba(255, 255, 255, 0.65);
+  color-scheme: light;
+}
+.toast[hidden] {
+  display: none;
+}
+.site-header a:focus-visible,
+.site-header button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid #aa4e64;
+  outline-offset: 3px;
+}
+.gallery {
+  cursor: grab;
+}
+.gallery:active {
+  cursor: grabbing;
+}
+.cart-toggle:active,
+.button:active {
+  transform: scale(0.97);
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .glass {
+    background: var(--bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+@media (max-width: 500px) {
+  .glass {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+}
+
+/* Аксессуары сохраняют стеклянную эстетику магазина, но выглядят как отдельная коллекция. */
+.accessories-hero {
+  padding-top: 150px;
+  padding-bottom: 55px;
+  max-width: 760px;
+}
+.accessories-hero h1 {
+  margin: 18px 0 12px;
+}
+.accessories-hero p {
+  max-width: 460px;
+  color: var(--muted);
+}
+.accessories-catalog {
+  padding-top: 30px;
+}
+.accessories-filter {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  width: fit-content;
+  max-width: 100%;
+  margin-bottom: 34px;
+  padding: 14px;
+}
+.accessories-filter label {
+  display: grid;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.accessories-filter input {
+  width: 170px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--ink);
+  background: transparent;
+}
+.accessories-filter .button {
+  white-space: nowrap;
+}
+.accessories-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+.accessory-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: 14px;
+  transition:
+    transform 0.35s var(--ease),
+    box-shadow 0.35s var(--ease);
+}
+.accessory-card:hover {
+  transform: translateY(-6px);
+}
+.accessory-card-link {
+  display: block;
+}
+.accessory-visual,
+.accessory-detail-visual {
+  position: relative;
+  overflow: hidden;
+  min-height: 280px;
+  background: linear-gradient(
+    135deg,
+    rgba(100, 31, 45, 0.18),
+    rgba(255, 255, 255, 0.32)
+  );
+}
+.accessory-visual img,
+.accessory-detail-visual img {
+  width: 100%;
+  height: 100%;
+  min-height: 280px;
+  object-fit: cover;
+}
+.luxury-placeholder {
+  display: grid;
+  min-height: 280px;
+  place-items: center;
+  color: rgba(100, 31, 45, 0.72);
+  font:
+    500 clamp(2rem, 5vw, 4rem) / 1 "Cormorant Garamond",
+    Georgia,
+    serif;
+  letter-spacing: 0.08em;
+  background:
+    radial-gradient(
+      circle at 30% 20%,
+      rgba(255, 255, 255, 0.7),
+      transparent 35%
+    ),
+    linear-gradient(135deg, #d8c9c2, #9b7772);
+}
+.accessory-visual .price-tag {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  padding: 7px 10px;
+  color: var(--ink);
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+}
+.accessory-info {
+  padding: 18px 4px 12px;
+}
+.accessory-info h2 {
+  margin: 7px 0;
+  font:
+    500 1.8rem / 1 "Cormorant Garamond",
+    Georgia,
+    serif;
+}
+.accessory-info p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.accessory-cart .button {
+  width: 100%;
+}
+.accessory-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr);
+  align-items: center;
+  gap: clamp(30px, 8vw, 110px);
+  padding-top: 150px;
+}
+.accessory-detail-visual {
+  min-height: 520px;
+}
+.accessory-detail-visual img,
+.accessory-detail-visual .luxury-placeholder {
+  min-height: 520px;
+}
+.accessory-detail-info h1 {
+  margin: 16px 0;
+  font:
+    500 clamp(3rem, 7vw, 6.5rem) / 0.9 "Cormorant Garamond",
+    Georgia,
+    serif;
+}
+.accessory-detail-info .description {
+  max-width: 430px;
+  margin: 28px 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+@media (max-width: 760px) {
+  .accessories-filter {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .accessories-filter input {
+    width: 100%;
+  }
+  .accessories-grid,
+  .accessory-detail {
+    grid-template-columns: 1fr;
+  }
+  .accessory-detail {
+    padding-top: 125px;
+  }
+  .accessory-detail-visual,
+  .accessory-detail-visual img,
+  .accessory-detail-visual .luxury-placeholder {
+    min-height: 360px;
+  }
+}

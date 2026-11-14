@@ -7,14 +7,33 @@
       <div class="designers-editorial-bottom"><span class="eyebrow">THE DESIGNER INDEX</span><span class="designers-coordinate">48° 51′ / 02° 21′</span></div>
     </div>
     <div class="designers-content">
-      <div class="designers-intro"><span class="eyebrow">01 / КУРАТОРСКИЙ УКАЗАТЕЛЬ</span><h2 id="designers-heading">Авторы<br><em>формы.</em></h2><p>Не просто имена. {{ brands|length }} независимых взглядов на то, чем может быть одежда.</p><span class="designers-instruction">ВЫБЕРИТЕ ДИЗАЙНЕРА <span aria-hidden="true">↘</span></span></div>
+      <div class="designers-intro">
+        <span class="eyebrow">01 / КУРАТОРСКИЙ УКАЗАТЕЛЬ</span>
+        <h2 id="designers-heading">
+          Авторы
+          <br>
+          <em>формы.</em>
+        </h2>
+        <p>Не просто имена. {{ brands|length }} независимых взглядов на то, чем может быть одежда.</p>
+        <span class="designers-instruction">ВЫБЕРИТЕ ДИЗАЙНЕРА <span aria-hidden="true">↘</span></span>
+      </div>
       <div class="designer-list" aria-label="Список дизайнеров">
         {% for brand in brands %}<a class="designer-row" href="{{ url_for('shop.brand',slug=brand.slug) }}" data-name="{{ brand.name }}" data-description="{{ brand.description or 'Исследуйте коллекцию и мир дизайнера.' }}" data-href="{{ url_for('shop.brand',slug=brand.slug) }}" aria-label="Открыть коллекцию {{ brand.name }}"><span class="designer-number">{{ '%02d'|format(loop.index) }} <span aria-hidden="true">/</span> {{ '%02d'|format(brands|length) }}</span><span class="designer-name">{{ brand.name }}</span><span class="designer-arrow" aria-hidden="true">↗</span></a>{% endfor %}
       </div>
       <div class="designers-end"><span>END OF INDEX</span><span>OBLIQUE © 2026</span></div>
     </div>
   </div>
-  <div class="brand-preview glass" aria-hidden="true" role="group" aria-label="Информация о дизайнере"><div class="brand-preview-head"><span class="eyebrow">OPEN WORLD</span><span class="brand-preview-mark" aria-hidden="true">↗</span></div><div class="brand-preview-body"><span class="brand-preview-index">DESIGNER / <span class="brand-preview-current">01</span></span><strong>OBLIQUE</strong><p class="brand-preview-description">Исследуйте коллекцию и мир дизайнера.</p></div><a class="brand-preview-link" href="{{ url_for('shop.catalog') }}" tabindex="-1">СМОТРЕТЬ КОЛЛЕКЦИЮ <span aria-hidden="true">↗</span></a></div>
+  <div class="brand-preview glass" aria-hidden="true" role="group" aria-label="Информация о дизайнере">
+    <div class="brand-preview-head"><span class="eyebrow">OPEN WORLD</span><span class="brand-preview-mark"
+                                                                                 aria-hidden="true">↗</span></div>
+    <div class="brand-preview-body">
+      <span class="brand-preview-index">DESIGNER / <span class="brand-preview-current">01</span></span><strong>OBLIQUE</strong>
+      <p class="brand-preview-description">Исследуйте коллекцию и мир дизайнера.</p>
+    </div>
+    <a class="brand-preview-link"
+       href="{{ url_for('shop.catalog') }}"
+       tabindex="-1">СМОТРЕТЬ КОЛЛЕКЦИЮ <span aria-hidden="true">↗</span></a>
+  </div>
 </section>
 <section class="editorial"><span class="eyebrow">Манифест / 2026</span><h2>Форма без<br><em>компромиссов.</em></h2><p>Предметы, которые остаются. Дизайнеры, которые меняют язык моды.</p></section><section class="section-pad"><div class="section-head"><span class="eyebrow">02 / Кураторский выбор</span><a class="text-link" href="{{ url_for('shop.catalog') }}">Вся коллекция ↗</a></div><h2 class="section-title">Предметы<br><em>желания.</em></h2><div class="product-grid">{% include 'shop/_cards.html' %}</div></section>{% endblock %}
 {# Главная: hero, семь брендов из БД, общее плавающее preview и подборка товаров. #}

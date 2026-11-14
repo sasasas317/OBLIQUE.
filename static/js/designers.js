@@ -1,22 +1,29 @@
 (() => {
   // Секция работает независимо от остального магазина и не создаёт дубликатов preview.
-  const section = document.querySelector('#designers');
+  const section = document.querySelector("#designers");
   if (!section) return;
 
-  const preview = section.querySelector('.brand-preview');
-  const rows = [...section.querySelectorAll('.designer-row')];
-  const mobile = matchMedia('(max-width: 700px), (hover: none)');
-  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const preview = section.querySelector(".brand-preview");
+  const rows = [...section.querySelectorAll(".designer-row")];
+  const mobile = matchMedia("(max-width: 700px), (hover: none)");
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
   let active = null;
-  let currentX = 0, currentY = 0, targetX = 0, targetY = 0;
+  let currentX = 0,
+    currentY = 0,
+    targetX = 0,
+    targetY = 0;
   let animationFrame = 0;
 
   function populate(row) {
     // data-* приходит из Jinja и меняет содержимое одного общего окна.
-    preview.querySelector('strong').textContent = row.dataset.name;
-    preview.querySelector('.brand-preview-description').textContent = row.dataset.description;
-    preview.querySelector('.brand-preview-current').textContent = row.querySelector('.designer-number').textContent.trim().slice(0, 2);
-    preview.querySelector('.brand-preview-link').href = row.href;
+    preview.querySelector("strong").textContent = row.dataset.name;
+    preview.querySelector(".brand-preview-description").textContent =
+      row.dataset.description;
+    preview.querySelector(".brand-preview-current").textContent = row
+      .querySelector(".designer-number")
+      .textContent.trim()
+      .slice(0, 2);
+    preview.querySelector(".brand-preview-link").href = row.href;
   }
 
   function place(x, y) {
@@ -29,8 +36,8 @@
     if (reducedMotion.matches) {
       currentX = targetX;
       currentY = targetY;
-      preview.style.setProperty('--preview-x', `${currentX}px`);
-      preview.style.setProperty('--preview-y', `${currentY}px`);
+      preview.style.setProperty("--preview-x", `${currentX}px`);
+      preview.style.setProperty("--preview-y", `${currentY}px`);
     }
   }
 
@@ -40,57 +47,61 @@
       animationFrame = 0;
       return;
     }
-    currentX += (targetX - currentX) * .14;
-    currentY += (targetY - currentY) * .14;
-    preview.style.setProperty('--preview-x', `${currentX}px`);
-    preview.style.setProperty('--preview-y', `${currentY}px`);
+    currentX += (targetX - currentX) * 0.14;
+    currentY += (targetY - currentY) * 0.14;
+    preview.style.setProperty("--preview-x", `${currentX}px`);
+    preview.style.setProperty("--preview-y", `${currentY}px`);
     animationFrame = requestAnimationFrame(follow);
   }
 
   function show(row, x, y) {
-    if (active && active !== row) active.classList.remove('is-active');
+    if (active && active !== row) active.classList.remove("is-active");
     active = row;
-    row.classList.add('is-active');
+    row.classList.add("is-active");
     populate(row);
     if (mobile.matches) {
       row.after(preview); // Перемещаем существующее окно, но не создаём новое.
-      preview.setAttribute('aria-hidden', 'false');
+      preview.setAttribute("aria-hidden", "false");
     } else {
       place(x, y);
-      if (!animationFrame && !reducedMotion.matches) animationFrame = requestAnimationFrame(follow);
+      if (!animationFrame && !reducedMotion.matches)
+        animationFrame = requestAnimationFrame(follow);
     }
-    preview.classList.add('is-visible');
+    preview.classList.add("is-visible");
   }
 
   function hide() {
-    if (active) active.classList.remove('is-active');
+    if (active) active.classList.remove("is-active");
     active = null;
-    preview.classList.remove('is-visible');
-    preview.setAttribute('aria-hidden', 'true');
+    preview.classList.remove("is-visible");
+    preview.setAttribute("aria-hidden", "true");
     if (animationFrame) cancelAnimationFrame(animationFrame);
     animationFrame = 0;
   }
 
-  rows.forEach(row => {
-    row.addEventListener('pointerenter', event => {
-      if (!mobile.matches && event.pointerType !== 'touch') show(row, event.clientX, event.clientY);
+  rows.forEach((row) => {
+    row.addEventListener("pointerenter", (event) => {
+      if (!mobile.matches && event.pointerType !== "touch")
+        show(row, event.clientX, event.clientY);
     });
-    row.addEventListener('pointermove', event => {
-      if (!mobile.matches && active === row) place(event.clientX, event.clientY);
+    row.addEventListener("pointermove", (event) => {
+      if (!mobile.matches && active === row)
+        place(event.clientX, event.clientY);
     });
-    row.addEventListener('pointerleave', () => {
-      if (!mobile.matches && active === row && !row.matches(':focus-visible')) hide();
+    row.addEventListener("pointerleave", () => {
+      if (!mobile.matches && active === row && !row.matches(":focus-visible"))
+        hide();
     });
-    row.addEventListener('focus', () => {
+    row.addEventListener("focus", () => {
       if (!mobile.matches) {
         const rect = row.getBoundingClientRect();
-        show(row, rect.left + rect.width * .55, rect.top + rect.height * .5);
+        show(row, rect.left + rect.width * 0.55, rect.top + rect.height * 0.5);
       }
     });
-    row.addEventListener('blur', () => {
+    row.addEventListener("blur", () => {
       if (!mobile.matches && active === row) hide();
     });
-    row.addEventListener('click', event => {
+    row.addEventListener("click", (event) => {
       if (!mobile.matches) return;
       if (active !== row) {
         event.preventDefault();
@@ -99,13 +110,18 @@
     });
   });
 
-  document.addEventListener('pointerdown', event => {
-    if (mobile.matches && active && !event.target.closest('.designer-row, .brand-preview')) hide();
+  document.addEventListener("pointerdown", (event) => {
+    if (
+      mobile.matches &&
+      active &&
+      !event.target.closest(".designer-row, .brand-preview")
+    )
+      hide();
   });
-  document.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && active) hide();
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && active) hide();
   });
-  mobile.addEventListener('change', () => {
+  mobile.addEventListener("change", () => {
     hide();
     section.append(preview);
   });

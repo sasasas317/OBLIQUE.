@@ -1,0 +1,56 @@
+{% extends "shop/base.html" %}
+
+{% block title %}Аксессуары — OBLIQUE{% endblock %}
+
+{% block content %}
+  <section class="accessories-hero section-pad">
+    <span class="eyebrow">Коллекция / Детали</span>
+    <h1>Аксессуары<span class="accent">.</span></h1>
+    <p>Финальный штрих: предметы, которые собирают образ и остаются надолго.</p>
+  </section>
+
+  <section class="accessories-catalog section-pad">
+    <form class="accessories-filter glass" method="get">
+      <label for="max-price">Цена до, €</label>
+      <input id="max-price" type="number" name="max_price" min="0" step="1"
+             value="{{ max_price }}" placeholder="Любая цена">
+      <button class="button button-dark" type="submit">Показать ↗</button>
+      {% if max_price %}
+        <a class="reset" href="{{ url_for('shop.accessories') }}">Сбросить</a>
+      {% endif %}
+    </form>
+
+    {% if accessories %}
+      <div class="accessories-grid">
+        {% for item in accessories %}
+          <article class="accessory-card glass">
+            <a href="{{ url_for('shop.accessory_detail', accessory_id=item.id) }}" class="accessory-card-link">
+              <div class="accessory-visual">
+                {% if item.image %}
+                  <img src="{{ url_for('static', filename='img/accessories/' + item.image) }}"
+                       alt="{{ item.name }}" loading="lazy">
+                {% else %}
+                  <span class="luxury-placeholder">OBLIQUE</span>
+                {% endif %}
+                <span class="price-tag">{{ item.price }} €</span>
+              </div>
+              <div class="accessory-info">
+                <span class="eyebrow">{{ item.designer.name if item.designer else 'OBLIQUE EDITION' }}</span>
+                <h2>{{ item.name }}</h2>
+                {% if item.description %}<p>{{ item.description }}</p>{% endif %}
+              </div>
+            </a>
+            <form class="add-to-cart accessory-cart" data-accessory-id="{{ item.id }}">
+              <button class="button button-dark" type="submit">В корзину <span>↗</span></button>
+            </form>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state glass">
+        <span class="eyebrow">Пока пусто</span>
+        <p>По этому диапазону цены аксессуаров не найдено.</p>
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}

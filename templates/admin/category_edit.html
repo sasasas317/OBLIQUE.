@@ -1,2 +1,6 @@
-{% extends 'admin/base.html' %}{% block content %}<div class="page-heading"><h1>Редактировать категорию</h1></div><div class="panel glass edit-panel"><form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Название<input name="name" value="{{ category.name }}" required></label><label>Slug<input name="slug" value="{{ category.slug }}" required></label><button class="btn">Сохранить</button></form></div>{% endblock %}
+{% extends 'admin/base.html' %}{% block content %}<div class="page-heading"><h1>Редактировать категорию</h1></div><div class="panel glass edit-panel"><form method="post"><input
+  type="hidden"
+  name="csrf_token"
+  value="{{ csrf_token() }}"
+><label>Название<input name="name" value="{{ category.name }}" required></label><label>Slug<input name="slug" value="{{ category.slug }}" required></label><button class="btn">Сохранить</button></form></div>{% endblock %}
 {# Редактирование категории, название/slug проверяются на сервере и в БД. #}

@@ -1,2 +1,28 @@
-{% extends 'shop/base.html' %}{% block title %}Корзина — OBLIQUE{% endblock %}{% block content %}<section class="simple-page"><span class="eyebrow">Ваш выбор / {{ items|length }}</span><h1>Корзина<span class="accent">.</span></h1>{% if items %}<div class="cart-list">{% for item in items %}<div class="cart-line"><div><strong>{{ item.product.name }}</strong><small>{{ item.size.size }} · {{ item.quantity }} шт.</small></div><span>{{ item.line }} €</span><button class="cart-remove text-link" data-key="{{ item.key }}" aria-label="Удалить {{ item.product.name }}">Удалить</button></div>{% endfor %}</div><div class="cart-total">Итого <strong>{{ total }} €</strong></div><a class="button button-dark" href="{{ url_for('shop.checkout') }}">Оформить заказ ↗</a>{% else %}<p>В корзине пока ничего нет.</p><a class="button button-dark" href="{{ url_for('shop.catalog') }}">Смотреть коллекцию ↗</a>{% endif %}</section>{% endblock %}
+{% extends 'shop/base.html' %}
+{% block title %}Корзина — OBLIQUE{% endblock %}
+{% block content %}
+  <section class="simple-page">
+    <span class="eyebrow">Ваш выбор / {{ items|length }}</span>
+    <h1>Корзина<span class="accent">.</span></h1>
+    {% if items %}
+      <div class="cart-list">
+        {% for item in items %}
+          <div class="cart-line">
+            <div>
+              <strong>{{ item.accessory.name if item.type == 'accessory' else item.product.name }}</strong>
+              <small>{% if item.type == 'accessory' %}Аксессуар{% else %}{{ item.size.size }} · {{ item.quantity }} шт.{% endif %}</small>
+            </div>
+            <span>{{ item.line }} €</span>
+            <button class="cart-remove text-link" data-key="{{ item.key }}" aria-label="Удалить {{ item.product.name }}">Удалить</button>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="cart-total">Итого <strong>{{ total }} €</strong></div>
+      <a class="button button-dark" href="{{ url_for('shop.checkout') }}">Оформить заказ ↗</a>
+    {% else %}
+      <p>В корзине пока ничего нет.</p>
+      <a class="button button-dark" href="{{ url_for('shop.catalog') }}">Смотреть коллекцию ↗</a>
+    {% endif %}
+  </section>
+{% endblock %}
 {# Полная страница корзины служит также источником содержимого для выдвижной панели. #}

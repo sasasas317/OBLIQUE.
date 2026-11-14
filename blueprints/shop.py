@@ -3,22 +3,51 @@
 from decimal import Decimal
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for
 from sqlalchemy import or_
-from models import Brand, Category, Product, ProductSize, Order, OrderItem, db
+from models import Accessory, Brand, Category, Order, OrderItem, Product, ProductSize, db
 from catalog_constants import CLOTHING_SIZES, SHOE_SIZES
 
 shop = Blueprint("shop", __name__)
 
 
 def cart_items():
-    """Собрать актуальные товары из session и пересчитать сумму на сервере."""
+    """Собрать актуальные товары и аксессуары из session."""
     cart = session.get("cart", {})
     items, total = [], Decimal("0")
     for key, data in cart.items():
+        quantity = data.get("quantity", 0)
+        if data.get("type") == "accessory":
+            accessory = db.session.get(Accessory, int(data["accessory_id"]))
+            if accessory:
+                line = accessory.price * quantity
+                items.append({
+                    "accessory": accessory,
+                    "quantity": quantity,
+                    "line": line,
+                    "key": key,
+                    "type": "accessory",
+                })
+                total += line
+            continue
+
         product = db.session.get(Product, int(data["product_id"]))
-        size = ProductSize.query.filter_by(product_id=product.id, size=data["size"]).first() if product else None
+        size = (
+            ProductSize.query.filter_by(
+                product_id=product.id,
+                size=data["size"],
+            ).first()
+            if product
+            else None
+        )
         if product and size and product.status == "published":
-            line = product.price * data["quantity"]
-            items.append({"product": product, "size": size, "quantity": data["quantity"], "line": line, "key": key})
+            line = product.price * quantity
+            items.append({
+                "product": product,
+                "size": size,
+                "quantity": quantity,
+                "line": line,
+                "key": key,
+                "type": "product",
+            })
             total += line
     return items, total
 
@@ -64,6 +93,30 @@ def product(slug):
     return render_template("shop/product.html", product=item)
 
 
+@shop.get("/accessories")
+def accessories():
+    """Показать аксессуары и применить серверный фильтр максимальной цены."""
+    query = Accessory.query.order_by(Accessory.name)
+    max_price = request.args.get("max_price", "").strip()
+    if max_price:
+        try:
+            query = query.filter(Accessory.price <= Decimal(max_price))
+        except (ValueError, ArithmeticError):
+            max_price = ""
+    return render_template(
+        "shop/accessories.html",
+        accessories=query.all(),
+        max_price=max_price,
+    )
+
+
+@shop.get("/accessories/<int:accessory_id>")
+def accessory_detail(accessory_id):
+    """Показать отдельную страницу аксессуара из ORM-записи."""
+    accessory = db.get_or_404(Accessory, accessory_id)
+    return render_template("shop/accessory.html", accessory=accessory)
+
+
 @shop.get("/cart")
 def cart():
     items, total = cart_items()
@@ -72,16 +125,42 @@ def cart():
 
 @shop.post("/api/cart")
 def add_cart():
-    """Добавить размер товара в сессию; остаток проверяется до изменения корзины."""
+    """Добавить товар или аксессуар в корзину после серверной проверки."""
     payload = request.get_json(silent=True) or request.form
     try:
-        product_id, quantity = int(payload.get("product_id", 0)), int(payload.get("quantity", 1))
+        quantity = int(payload.get("quantity", 1))
+    except (ValueError, TypeError):
+        return jsonify(error="Неверные параметры"), 400
+
+    if quantity < 1:
+        return jsonify(error="Неверное количество"), 400
+
+    accessory_id = payload.get("accessory_id")
+    if accessory_id:
+        try:
+            accessory_id = int(accessory_id)
+        except (ValueError, TypeError):
+            return jsonify(error="Неверные параметры"), 400
+        accessory = db.session.get(Accessory, accessory_id)
+        if not accessory:
+            return jsonify(error="Аксессуар недоступен"), 400
+        cart = session.setdefault("cart", {})
+        key = f"accessory:{accessory.id}"
+        desired = cart.get(key, {}).get("quantity", 0) + quantity
+        cart[key] = {
+            "type": "accessory",
+            "accessory_id": accessory.id,
+            "quantity": desired,
+        }
+        session.modified = True
+        return jsonify(ok=True, count=sum(x["quantity"] for x in cart.values()))
+
+    try:
+        product_id = int(payload.get("product_id", 0))
     except (ValueError, TypeError):
         return jsonify(error="Неверные параметры"), 400
     product = db.session.get(Product, product_id)
     size = ProductSize.query.filter_by(product_id=product.id if product else 0, size=payload.get("size", "")).first()
-    if quantity < 1:
-        return jsonify(error="Неверное количество"), 400
     if not product or product.status != "published" or not size or quantity > size.stock:
         return jsonify(error="Товар или размер недоступен"), 400
     cart = session.setdefault("cart", {})
@@ -89,7 +168,12 @@ def add_cart():
     desired = cart.get(key, {}).get("quantity", 0) + quantity
     if desired > size.stock:
         return jsonify(error="Недостаточно товара на складе"), 400
-    cart[key] = {"product_id": product.id, "size": size.size, "quantity": desired}
+    cart[key] = {
+        "type": "product",
+        "product_id": product.id,
+        "size": size.size,
+        "quantity": desired,
+    }
     session.modified = True
     return jsonify(ok=True, count=sum(x["quantity"] for x in cart.values()))
 
@@ -106,6 +190,8 @@ def update_cart(key):
         return jsonify(error="Неверное количество"), 400
     if quantity <= 0:
         cart.pop(key)
+    elif cart[key].get("type") == "accessory":
+        cart[key]["quantity"] = quantity
     else:
         size = ProductSize.query.filter_by(product_id=cart[key]["product_id"], size=cart[key]["size"]).first()
         if not size or quantity > size.stock:
@@ -130,6 +216,18 @@ def checkout():
         db.session.add(order)
         # FOR UPDATE защищает от ситуации, когда два checkout одновременно продают один остаток.
         for item in items:
+            if item["type"] == "accessory":
+                db.session.add(
+                    OrderItem(
+                        order=order,
+                        accessory_id=item["accessory"].id,
+                        product_name=item["accessory"].name,
+                        size="One size",
+                        quantity=item["quantity"],
+                        unit_price=item["accessory"].price,
+                    )
+                )
+                continue
             size = ProductSize.query.filter_by(product_id=item["product"].id, size=item["size"].size).with_for_update().one()
             if item["quantity"] > size.stock:
                 db.session.rollback()

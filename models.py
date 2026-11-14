@@ -100,13 +100,15 @@ class OrderItem(db.Model):
     __tablename__ = "order_items"
     id = db.Column(db.Integer, primary_key=True)
     order_id = db.Column(db.Integer, db.ForeignKey("orders.id", ondelete="CASCADE"), nullable=False, index=True)
-    product_id = db.Column(db.Integer, db.ForeignKey("products.id", ondelete="RESTRICT"), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey("products.id", ondelete="RESTRICT"))
+    accessory_id = db.Column(db.Integer, db.ForeignKey("accessories.id", ondelete="RESTRICT"))
     product_name = db.Column(db.String(180), nullable=False)
     size = db.Column(db.String(30), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     unit_price = db.Column(db.Numeric(10, 2), nullable=False)
     order = db.relationship("Order", back_populates="items")
     product = db.relationship("Product")
+    accessory = db.relationship("Accessory")
 
 
 class Admin(UserMixin, db.Model):
@@ -135,3 +137,20 @@ class AdminLog(db.Model):
     entity_id = db.Column(db.Integer)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
     admin = db.relationship("Admin")
+
+
+
+
+class Accessory(db.Model):
+    """Аксессуар — отдельная сущность от одежды/обуви."""
+    __tablename__ = "accessories"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    price = db.Column(db.Numeric(10, 2), nullable=False)
+    image = db.Column(db.String(200))
+    description = db.Column(db.Text)
+    designer_id = db.Column(db.Integer, db.ForeignKey("brands.id", ondelete="SET NULL"))
+    designer = db.relationship("Brand")
+
+    def __repr__(self):
+        return f"<Accessory {self.name}>"
