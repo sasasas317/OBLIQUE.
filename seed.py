@@ -151,6 +151,11 @@ ACCESSORIES = (
 
 # Ссылки на изображения прежних аксессуаров обновляются отдельно от новых позиций.
 ACCESSORY_IMAGES = {
+    "See You In Tea Sunglasses": "https://th.bing.com/th/id/OIP.3lQF1YsMFylrJf1XF9Ud8gHaHa?w=174&h=180&c=7&r=0&o=7&pid=1.7&rm=3",
+    "Four-Stitch Card Holder": "https://th.bing.com/th/id/OIP.UoTFM1kiRCTaBx5D--7-jwHaJQ?w=199&h=249&c=7&r=0&o=7&pid=1.7&rm=3",
+    "Saffiano Leather Card Holder": "https://th.bing.com/th/id/OIP.0eMl2qiSZCqZtYplV0YVHQHaIa?w=199&h=226&c=7&r=0&o=7&pid=1.7&rm=3",
+    "Industrial Belt": "https://th.bing.com/th/id/OIP.JAEpivhai3p8dRjv3p46rwHaIX?w=176&h=199&c=7&r=0&o=7&pid=1.7&rm=3",
+    "Wayfarer RB2140": "https://th.bing.com/th/id/OIP.Bevyy_eo5Ct9c0QsYsTLjgHaDt?w=314&h=175&c=7&r=0&o=7&pid=1.7&rm=3",
     "Cemetery Cross Ring": "https://th.bing.com/th/id/OIP.mfazgxci6B-OpZf2YTLf7AHaJQ?w=162&h=203&c=7&r=0&o=7&pid=1.7&rm=3",
     "CH Plus Bracelet": "https://th.bing.com/th/id/R.21261eae8955d699310df75713b179e0?rik=K1XyxER7VpqTtQ&riu=http%3a%2f%2fypcollective.com%2fcdn%2fshop%2ffiles%2ftiny-ch-plus-bracelet-sapphire.jpg%3fv%3d1761860420&ehk=W925BE37%2f7rBLeTZeXHcIjj9m9hnWVwu8uNN9dUq1MA%3d&risl=&pid=ImgRaw&r=0",
     "Four Stitches Card Holder": "https://tse1.mm.bing.net/th/id/OIP.lKLSNtHVrHQS44ZvI0W-wQHaLH?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
