@@ -1,25 +1,94 @@
-Задача: Исправить размер и вид изображений в карточках каталога на вкладке "Аксессуары" (и проверить остальные категории). Сейчас картинки огромные: каждая карточка почти на весь экран, фото в портретном формате ~3:4 растягивает карточку по высоте.
+Задача: Обновить массив данных о товарах в текущем проекте. Теперь включаем репрезентативные позиции из категорий: Jewelry (Украшения), Bags/Wallets (Сумки/Кошельки) и Footwear (Обувь).
 
-Проблемы на скриншоте:
-1. Изображения слишком крупные, карточки получаются слишком высокими.
-2. Карточки в ряду не выровнены по верхнему краю и имеют разную высоту.
-3. У фото разные фоны (белый, светло-серый, серый), а у контейнера градиент, из-за этого по краям изображения видны полосы разных цветов.
-4. Фото по-разному вписаны в контейнер (где-то с отступами сверху и снизу, где-то по бокам).
+КРИТИЧЕСКИЕ ТРЕБОВАНИЯ:
+1. СТИЛИСТИКА: Никаких изменений в CSS. Верстка прежняя.
+2. ДАННЫЕ: Используй строго предоставленные ниже объекты.
+3. ЛОГИКА: Убедись, что поле `category` (если оно есть в твоей схеме) заполняется корректно ("Jewelry", "Bag", "Footwear"). Если поля `category` нет, просто добавь его в объект, чтобы можно было фильтровать.
 
-ТРЕБОВАНИЯ:
-1. Меняй только CSS/разметку блока изображения и сетки каталога. Цвета, шрифты, тексты, кнопки и фильтры не трогай.
-2. Контейнер изображения: `aspect-ratio: 1 / 1` (или 4 / 5, если так лучше выглядит), `width: 100%`, `overflow: hidden`. Фиксированную высоту в px не используй.
-3. Само изображение: `width: 100%; height: 100%; object-fit: contain; object-position: center; display: block;`.
-4. Фон контейнера изображения сделай единым светлым нейтральным цветом (например, #f3f1ed), чтобы белые и серые фото не давали полос по краям. Градиентный фон оставь только у самой карточки.
-5. Сетка каталога: `display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px; align-items: start;`. Желательно 4 колонки на десктопе, 2 на планшете, 1-2 на телефоне.
-6. Все карточки в ряду должны иметь одинаковую высоту и выровненные верхние края. Если описание длинное, обрежь его через line-clamp (2-3 строки).
-7. Плашка с ценой в правом нижнем углу изображения должна остаться на месте.
-8. Проверь страницу детального просмотра: там тоже должно быть единое вписывание изображения (object-fit: contain, по центру, без пустых полей).
-9. Проверь все категории (Jewelry, Accessories и т.д.) и заглушки imageUrl: размеры должны быть одинаковыми, картинки не растягиваются и не обрезаются.
+ДАТА ДЛЯ ИНТЕГРАЦИИ:
 
-ОТВЕТ:
-Перечисли изменённые файлы и какие CSS-свойства были причиной проблемы.
+[
+  // --- CHROME HEARTS (Акцент на Jewelry & Leather Goods) ---
+  {
+    "id": 1,
+    "brand": "Chrome Hearts",
+    "name": "Sterling Silver Cross Pendant Necklace",
+    "price": 1200,
+    "category": "Jewelry",
+    "description": "Classic gothic cross pendant crafted in .925 sterling silver with a leather cord."
+  },
+  {
+    "id": 2,
+    "brand": "Chrome Hearts",
+    "name": "Leather Glove Wallet",
+    "price": 850,
+    "category": "Accessories",
+    "description": "Handmade leather wallet with signature fleur-de-lis hardware and glove-style stitching."
+  },
+  {
+    "id": 3,
+    "brand": "Chrome Hearts",
+    "name": "Daggers Ring - Size 10",
+    "price": 750,
+    "category": "Jewelry",
+    "description": "Heavyweight sterling silver ring featuring the iconic dagger motif."
+  },
 
-ВАЖНО:
- 
-ДЛЯ ПОНЯНОСТИ КОДА ВЕЗДЕ ДОБАВЬ КОММЕНТАРИИ
+  // --- MAISON MARGIELA (Акцент на Avant-Garde & Footwear) ---
+  {
+    "id": 4,
+    "brand": "Maison Margiela",
+    "name": "Replica Sneakers",
+    "price": 690,
+    "category": "Footwear",
+    "description": "Iconic low-top sneakers inspired by vintage basketball shoes, featuring distressed white leather and blue accents."
+  },
+  {
+    "id": 5,
+    "brand": "Maison Margiela",
+    "name": "Tab Boots",
+    "price": 1150,
+    "category": "Footwear",
+    "description": "Ankle boots with distinctive four-stitching detail across the toe box, made from smooth calfskin."
+  },
+  {
+    "id": 6,
+    "brand": "Maison Margiela",
+    "name": "Glam Slam Puffer Bag",
+    "price": 1450,
+    "category": "Bags",
+    "description": "Quilted nylon shoulder bag with oversized handle and hidden pocket, embodying deconstructed luxury."
+  },
+
+  // --- PRADA (Акцент на Minimalism & Tech Fabrics) ---
+  {
+    "id": 7,
+    "brand": "Prada",
+    "name": "Re-Nylon Shoulder Bag",
+    "price": 1350,
+    "category": "Bags",
+    "description": "Lightweight shoulder bag crafted from regenerated nylon fabric with the iconic enameled metal triangle logo."
+  },
+  {
+    "id": 8,
+    "brand": "Prada",
+    "name": "Saffiano Leather Tote",
+    "price": 1800,
+    "category": "Bags",
+    "description": "Structured tote bag made from scratch-resistant Saffiano leather with gold-tone hardware."
+  },
+  {
+    "id": 9,
+    "brand": "Prada",
+    "name": "Symbole Linea Rossa Sunglasses",
+    "price": 450,
+    "category": "Eyewear",
+    "description": "Sporty acetate sunglasses with red accent details, part of the technical Linea Rossa collection."
+  }
+]
+
+ИНСТРУКЦИЯ ПО ВЫПОЛНЕНИЮ:
+1. Замени старый массив на этот новый (расширенный).
+2. Если в компонентах карточек товаров есть логика отображения цены или названия, убедись, что они работают с этими данными без ошибок.
+3. Поле `imageUrl` оставь заглушками (`/assets/[brand]/[slug].jpg`) с комментарием `// TODO: Add real image`.
+4. Это учебный проект. Фокус на структуре данных и сохранении UI.
