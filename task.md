@@ -1,27 +1,94 @@
-Ты работаешь с проектом интернет-магазина luxury-аксессуаров OBLIQUE на стеке Python (Flask) + MySQL + Jinja2. 
+Задача: Обновить массив данных о товарах в текущем проекте. Теперь включаем репрезентативные позиции из категорий: Jewelry (Украшения), Bags/Wallets (Сумки/Кошельки) и Footwear (Обувь).
 
-Контекст проекта:
-1. Архитектура: Используется паттерн Application Factory (`create_app` в `app.py`). Маршруты разделены на Blueprints: `shop` (публичная часть) и `admin` (админка).
-2. База данных: MySQL (схема `atelier`). ORM — SQLAlchemy.
-3. Стилистика: Минимализм, dark mode, шрифты Cormorant Garamond (заголовки) и Inter (текст). CSS лежит в `static/css/shop-extra.css`.
+КРИТИЧЕСКИЕ ТРЕБОВАНИЯ:
+1. СТИЛИСТИКА: Никаких изменений в CSS. Верстка прежняя.
+2. ДАННЫЕ: Используй строго предоставленные ниже объекты.
+3. ЛОГИКА: Убедись, что поле `category` (если оно есть в твоей схеме) заполняется корректно ("Jewelry", "Bag", "Footwear"). Если поля `category` нет, просто добавь его в объект, чтобы можно было фильтровать.
 
-Что уже сделано для вкладки "Аксессуары":
-1. Модель: В `models.py` добавлен класс `Accessory` (поля: id, name, price, image, description, designer_id). Таблица `accessories` создана в БД.
-2. Маршрут: В `blueprints/shop.py` добавлен маршрут `@shop.get("/accessories")`, который передает список аксессуаров в шаблон.
-3. Шаблон: Создан `templates/shop/accessories.html`. Он наследует `shop/base.html`. 
-   - Реализована сетка товаров (`.products-grid`).
-   - Для товаров без фото сделана стильная заглушка (`.luxury-placeholder`) с градиентом, логотипом OBLIQUE и ценой.
-4. Навигация: В `base.html` в меню добавлена ссылка на `/accessories`.
-5. Данные: В БД есть тестовые данные (ремень, шарф и т.д.).
-6. Git: Проект запушен в репозиторий, `.gitignore` настроен корректно (venv и instance исключены).
+ДАТА ДЛЯ ИНТЕГРАЦИИ:
 
-Текущая задача / Что нужно доработать:
- "Добавь фильтрацию аксессуаров по цене", "Сделай страницу отдельного аксессуара", "Добавь кнопку 'В корзину' на карточку" и сделай вкладку по красивее чтобы было красиво но по тематике самого сайта
+[
+  // --- CHROME HEARTS (Акцент на Jewelry & Leather Goods) ---
+  {
+    "id": 1,
+    "brand": "Chrome Hearts",
+    "name": "Sterling Silver Cross Pendant Necklace",
+    "price": 1200,
+    "category": "Jewelry",
+    "description": "Classic gothic cross pendant crafted in .925 sterling silver with a leather cord."
+  },
+  {
+    "id": 2,
+    "brand": "Chrome Hearts",
+    "name": "Leather Glove Wallet",
+    "price": 850,
+    "category": "Accessories",
+    "description": "Handmade leather wallet with signature fleur-de-lis hardware and glove-style stitching."
+  },
+  {
+    "id": 3,
+    "brand": "Chrome Hearts",
+    "name": "Daggers Ring - Size 10",
+    "price": 750,
+    "category": "Jewelry",
+    "description": "Heavyweight sterling silver ring featuring the iconic dagger motif."
+  },
 
-Требования к коду:
-- Соблюдай существующий стиль кода и naming convention.
-- Используй SQLAlchemy ORM для запросов.
-- Стили добавляй в `shop-extra.css`.
-- Не трогай глобальные настройки `app.py`, если это не критично.
+  // --- MAISON MARGIELA (Акцент на Avant-Garde & Footwear) ---
+  {
+    "id": 4,
+    "brand": "Maison Margiela",
+    "name": "Replica Sneakers",
+    "price": 690,
+    "category": "Footwear",
+    "description": "Iconic low-top sneakers inspired by vintage basketball shoes, featuring distressed white leather and blue accents."
+  },
+  {
+    "id": 5,
+    "brand": "Maison Margiela",
+    "name": "Tab Boots",
+    "price": 1150,
+    "category": "Footwear",
+    "description": "Ankle boots with distinctive four-stitching detail across the toe box, made from smooth calfskin."
+  },
+  {
+    "id": 6,
+    "brand": "Maison Margiela",
+    "name": "Glam Slam Puffer Bag",
+    "price": 1450,
+    "category": "Bags",
+    "description": "Quilted nylon shoulder bag with oversized handle and hidden pocket, embodying deconstructed luxury."
+  },
 
-Также после всего этого везеде добавь понятных комментариев 
+  // --- PRADA (Акцент на Minimalism & Tech Fabrics) ---
+  {
+    "id": 7,
+    "brand": "Prada",
+    "name": "Re-Nylon Shoulder Bag",
+    "price": 1350,
+    "category": "Bags",
+    "description": "Lightweight shoulder bag crafted from regenerated nylon fabric with the iconic enameled metal triangle logo."
+  },
+  {
+    "id": 8,
+    "brand": "Prada",
+    "name": "Saffiano Leather Tote",
+    "price": 1800,
+    "category": "Bags",
+    "description": "Structured tote bag made from scratch-resistant Saffiano leather with gold-tone hardware."
+  },
+  {
+    "id": 9,
+    "brand": "Prada",
+    "name": "Symbole Linea Rossa Sunglasses",
+    "price": 450,
+    "category": "Eyewear",
+    "description": "Sporty acetate sunglasses with red accent details, part of the technical Linea Rossa collection."
+  }
+]
+
+ИНСТРУКЦИЯ ПО ВЫПОЛНЕНИЮ:
+1. Замени старый массив на этот новый (расширенный).
+2. Если в компонентах карточек товаров есть логика отображения цены или названия, убедись, что они работают с этими данными без ошибок.
+3. Поле `imageUrl` оставь заглушками (`/assets/[brand]/[slug].jpg`) с комментарием `// TODO: Add real image`.
+4. Это учебный проект. Фокус на структуре данных и сохранении UI.
