@@ -1,3 +1,4 @@
+# Экспорт скрывает персональные данные покупателей перед созданием публичного дампа.
 """Create a restorable SQL snapshot of all atelier tables for the public repo.
 
 The dump keeps IDs and relationships, but replaces buyer contact details and
@@ -13,7 +14,8 @@ from pymysql.converters import escape_string
 from werkzeug.security import generate_password_hash
 
 from app import app
-from models import Admin, AdminLog, Brand, Category, Order, OrderItem, Product, ProductImage, ProductSize, db
+# Export every catalog, order and account model, including standalone accessories.
+from models import Accessory, Admin, AdminLog, Brand, Category, Order, OrderItem, Product, ProductImage, ProductSize, db
 
 
 ROOT = Path(__file__).resolve().parent
@@ -64,7 +66,7 @@ def anonymize_admin(values):
 def export():
     schema = (ROOT / "schema.sql").read_text(encoding="utf-8").rstrip()
     lines = [
-        "-- OBLIQUE: полный снимок девяти таблиц atelier для публичного репозитория.",
+        "-- OBLIQUE: полный снимок десяти таблиц atelier для публичного репозитория.",
         "-- Личные данные покупателей и пароль администратора заменены.",
         "-- Импортируйте в ПУСТУЮ базу: HeidiSQL -> Файл -> Загрузить SQL-файл -> F9.",
         "-- После импорта запустите python restore_admin.py для задания локального пароля.",
@@ -80,15 +82,18 @@ def export():
             (Product, ("id", "brand_id", "category_id", "name", "slug", "price", "description", "status", "created_at"), None),
             (ProductImage, ("id", "product_id", "path", "thumb_path", "position", "is_primary"), None),
             (ProductSize, ("id", "product_id", "size", "stock"), None),
+            # Accessories are separate catalog records and must be included in the public snapshot.
+            (Accessory, ("id", "name", "price", "image", "description", "designer_id"), None),
             (Order, ("id", "customer_name", "email", "phone", "address", "total", "status", "created_at"), anonymize_order),
-            (OrderItem, ("id", "order_id", "product_id", "product_name", "size", "quantity", "unit_price"), None),
+            # Both product_id and accessory_id are nullable because an order line can reference either entity.
+            (OrderItem, ("id", "order_id", "product_id", "accessory_id", "product_name", "size", "quantity", "unit_price"), None),
             (Admin, ("id", "email", "password_hash", "created_at", "last_login"), anonymize_admin),
             (AdminLog, ("id", "admin_id", "action", "entity", "entity_id", "created_at"), None),
         ):
             lines.extend(insert_rows(model, columns, transform))
     lines.extend(("COMMIT;", ""))
     OUTPUT.write_text("\n".join(lines), encoding="utf-8")
-    print(f"Exported all nine tables to {OUTPUT.name}")
+    print(f"Exported the complete catalog snapshot to {OUTPUT.name}")
 
 
 if __name__ == "__main__":

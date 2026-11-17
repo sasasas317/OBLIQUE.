@@ -3,4 +3,5 @@
   name="csrf_token"
   value="{{ csrf_token() }}"
 ><label>Название<input name="name" value="{{ category.name }}" required></label><label>Slug<input name="slug" value="{{ category.slug }}" required></label><button class="btn">Сохранить</button></form></div>{% endblock %}
+{# Назначение: редактирование названия и slug категории. #}
 {# Редактирование категории, название/slug проверяются на сервере и в БД. #}

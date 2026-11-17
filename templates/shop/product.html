@@ -19,4 +19,5 @@
   type="submit"
   {% if not product.available %}disabled{% endif %}
 >Добавить в корзину <span>↗</span></button></form><div class="detail-note">Тщательный отбор · Самовывоз и доставка по согласованию</div></div></section>{% endblock %}
+{# Назначение: detail-страница Product показывает галерею, размеры и форму корзины. #}
 {# Галерея и размеры берутся из связей ORM; JS отправляет выбор размера в API корзины. #}

@@ -1,3 +1,4 @@
+# Миграция идемпотентна: существующие таблицы и колонки повторно не создаются.
 """Добавить таблицу аксессуаров и связь аксессуаров с позициями заказов."""
 
 from sqlalchemy import inspect, text
@@ -50,6 +51,11 @@ def migrate():
                 connection.execute(
                     text("ALTER TABLE order_items MODIFY product_id INT NULL")
                 )
+
+            # Длинные внешние URL из task.md требуют расширенного поля изображения.
+            connection.execute(
+                text("ALTER TABLE accessories MODIFY image VARCHAR(1000) NULL")
+            )
 
 
 if __name__ == "__main__":

@@ -23,4 +23,5 @@
   value="{{ value }}"
   {% if order.status==value %}selected{% endif %}
 >{{ label }}</option>{% endfor %}</select><button class="btn btn-small" type="submit">Сохранить</button></form></td></tr>{% endfor %}</tbody></table></div></div>{% endblock %}
+{# Назначение: просмотр заказов и изменение их статусов. #}
 {# Фильтры GET; каждое изменение статуса — отдельный CSRF-защищённый POST. #}

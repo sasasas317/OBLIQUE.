@@ -1,3 +1,4 @@
+# Админский blueprint защищает CRUD-операции login_required/admin_required.
 """Закрытая админка: CRUD каталога, изображения, заказы и отчёты."""
 
 import csv

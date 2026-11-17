@@ -1,3 +1,4 @@
+# Скрипт восстанавливает только локальный пароль администратора после импорта дампа.
 """Set the local administrator password from .env after importing database_dump.sql."""
 
 import os

@@ -1,3 +1,4 @@
+# Тест проверяет DOM списка дизайнеров и доступность всех его ссылок.
 """Check the seven editorial links and the single shared preview."""
 from html.parser import HTMLParser
 

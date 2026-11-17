@@ -1,3 +1,4 @@
+# Публичный blueprint обслуживает каталог, аксессуары, корзину и checkout.
 """Публичная витрина: каталог, карточки, корзина и checkout."""
 
 from decimal import Decimal
@@ -10,15 +11,27 @@ shop = Blueprint("shop", __name__)
 
 
 def cart_items():
+    # Единая сборка строк корзины используется страницей корзины и checkout.
     """Собрать актуальные товары и аксессуары из session."""
     cart = session.get("cart", {})
     items, total = [], Decimal("0")
     for key, data in cart.items():
-        quantity = data.get("quantity", 0)
+        # Session может содержать устаревшие или сериализованные значения, поэтому проверяем количество.
+        try:
+            quantity = int(data.get("quantity", 0))
+        except (TypeError, ValueError):
+            continue
+        if quantity < 1:
+            continue
         if data.get("type") == "accessory":
-            accessory = db.session.get(Accessory, int(data["accessory_id"]))
+            # ID аксессуара приводится к int перед поиском записи в базе.
+            try:
+                accessory = db.session.get(Accessory, int(data["accessory_id"]))
+            except (KeyError, TypeError, ValueError):
+                accessory = None
             if accessory:
-                line = accessory.price * quantity
+                # ORM Numeric и количество приводятся к Decimal-совместимому расчёту.
+                line = Decimal(str(accessory.price)) * quantity
                 items.append({
                     "accessory": accessory,
                     "quantity": quantity,
@@ -29,7 +42,11 @@ def cart_items():
                 total += line
             continue
 
-        product = db.session.get(Product, int(data["product_id"]))
+        # Товары используют тот же формат ID, что и аксессуары.
+        try:
+            product = db.session.get(Product, int(data["product_id"]))
+        except (KeyError, TypeError, ValueError):
+            product = None
         size = (
             ProductSize.query.filter_by(
                 product_id=product.id,
@@ -39,7 +56,8 @@ def cart_items():
             else None
         )
         if product and size and product.status == "published":
-            line = product.price * quantity
+            # Нормализация цены исключает смешивание Decimal и float.
+            line = Decimal(str(product.price)) * quantity
             items.append({
                 "product": product,
                 "size": size,
@@ -52,16 +70,30 @@ def cart_items():
     return items, total
 
 
+def cart_count():
+    """Return the count for the same valid session entries used by cart_items."""
+    # Считаем только позиции, которые реально будут показаны в корзине.
+    return sum(item["quantity"] for item in cart_items()[0])
+
+
 @shop.get("/")
 def home():
+    # Главная получает только бренды одежды/обуви для редакционного списка.
     """Главная показывает только опубликованные товары и бренды из БД."""
-    brands = Brand.query.order_by(Brand.name).all()
+    # В указатель дизайнеров попадают только бренды одежды и обуви, не аксессуаров.
+    brands = Brand.query.filter(
+        Brand.products.any(Product.category.has(slug="outerwear"))
+        | Brand.products.any(Product.category.has(slug="trousers"))
+        | Brand.products.any(Product.category.has(slug="shoes"))
+        | Brand.products.any(Product.category.has(slug="shirts"))
+    ).order_by(Brand.name).all()
     featured = Product.query.filter_by(status="published").order_by(Product.created_at.desc()).limit(8).all()
     return render_template("shop/home.html", brands=brands, products=featured)
 
 
 @shop.get("/catalog")
 def catalog():
+    # Каталог применяет query-параметры к ORM-запросу опубликованных товаров.
     """Каталог применяет фильтры ORM-запросом, без ручной сборки SQL."""
     query = Product.query.filter_by(status="published")
     if request.args.get("brand"):
@@ -95,6 +127,7 @@ def product(slug):
 
 @shop.get("/accessories")
 def accessories():
+    # Аксессуары хранятся отдельной ORM-сущностью, не смешиваются с Product.
     """Показать аксессуары и применить серверный фильтр максимальной цены."""
     query = Accessory.query.order_by(Accessory.name)
     max_price = request.args.get("max_price", "").strip()
@@ -125,6 +158,7 @@ def cart():
 
 @shop.post("/api/cart")
 def add_cart():
+    # POST принимает либо accessory_id, либо product_id с выбранным размером.
     """Добавить товар или аксессуар в корзину после серверной проверки."""
     payload = request.get_json(silent=True) or request.form
     try:
@@ -180,6 +214,7 @@ def add_cart():
 
 @shop.post("/api/cart/<key>")
 def update_cart(key):
+    # Количество изменяется по тому же ключу, который был записан в session.
     """Изменить или удалить строку корзины через JSON/form POST."""
     cart = session.get("cart", {})
     if key not in cart:
@@ -203,6 +238,7 @@ def update_cart(key):
 
 @shop.route("/checkout", methods=["GET", "POST"])
 def checkout():
+    # Checkout повторно собирает и проверяет корзину перед созданием Order.
     """Создать заказ и атомарно уменьшить остаток заблокированной строки размера."""
     items, total = cart_items()
     if not items:

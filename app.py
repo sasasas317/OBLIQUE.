@@ -1,3 +1,4 @@
+# Точка входа приложения: здесь собираются Flask, база, авторизация и blueprints.
 """Точка входа: создание Flask-приложения и подключение общих расширений."""
 
 from flask import Flask, render_template
@@ -31,14 +32,16 @@ def create_app():
     def security_headers(response):
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "SAMEORIGIN"
-        response.headers["Content-Security-Policy"] = "default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data:; connect-src 'self'"
+        # Разрешаем внешние HTTPS-изображения, используемые карточками аксессуаров.
+        response.headers["Content-Security-Policy"] = "default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self'"
         return response
 
     # Доступен в каждом Jinja-шаблоне, включая шапку и выдвижную корзину.
     @app.context_processor
     def inject_cart_count():
-        from flask import session
-        return {"cart_count": sum(item.get("quantity", 0) for item in session.get("cart", {}).values())}
+        # Счётчик использует ту же валидацию session-корзины, что и страница корзины.
+        from blueprints.shop import cart_count
+        return {"cart_count": cart_count()}
 
     @app.errorhandler(404)
     def not_found(error):

@@ -1,4 +1,4 @@
--- OBLIQUE: полный снимок девяти таблиц atelier для публичного репозитория.
+-- OBLIQUE: полный снимок десяти таблиц atelier для публичного репозитория.
 -- Личные данные покупателей и пароль администратора заменены.
 -- Импортируйте в ПУСТУЮ базу: HeidiSQL -> Файл -> Загрузить SQL-файл -> F9.
 -- После импорта запустите python restore_admin.py для задания локального пароля.
@@ -11,15 +11,17 @@ CREATE TABLE IF NOT EXISTS categories (id INT AUTO_INCREMENT PRIMARY KEY, name V
 CREATE TABLE IF NOT EXISTS products (id INT AUTO_INCREMENT PRIMARY KEY, brand_id INT NOT NULL, category_id INT NOT NULL, name VARCHAR(180) NOT NULL, slug VARCHAR(200) NOT NULL UNIQUE, price DECIMAL(10,2) NOT NULL, description TEXT, status ENUM('published','hidden') NOT NULL DEFAULT 'published', created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, INDEX idx_products_brand(brand_id), INDEX idx_products_category(category_id), INDEX idx_products_status(status), FOREIGN KEY (brand_id) REFERENCES brands(id), FOREIGN KEY (category_id) REFERENCES categories(id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS product_images (id INT AUTO_INCREMENT PRIMARY KEY, product_id INT NOT NULL, path VARCHAR(255) NOT NULL, thumb_path VARCHAR(255), position INT NOT NULL DEFAULT 0, is_primary TINYINT(1) NOT NULL DEFAULT 0, INDEX idx_images_product(product_id), FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS product_sizes (id INT AUTO_INCREMENT PRIMARY KEY, product_id INT NOT NULL, size VARCHAR(30) NOT NULL, stock INT NOT NULL DEFAULT 0, UNIQUE KEY uq_product_size(product_id,size), INDEX idx_sizes_product(product_id), FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+-- Внешние ссылки из task.md могут быть длиннее стандартного локального имени файла.
+CREATE TABLE IF NOT EXISTS accessories (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(120) NOT NULL, price DECIMAL(10,2) NOT NULL, image VARCHAR(1000), description TEXT, designer_id INT NULL, INDEX idx_accessories_designer(designer_id), FOREIGN KEY (designer_id) REFERENCES brands(id) ON DELETE SET NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS orders (id INT AUTO_INCREMENT PRIMARY KEY, customer_name VARCHAR(160) NOT NULL, email VARCHAR(255) NOT NULL, phone VARCHAR(50), address TEXT NOT NULL, total DECIMAL(10,2) NOT NULL DEFAULT 0, status ENUM('new','paid','shipped','delivered','cancelled') NOT NULL DEFAULT 'new', created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, INDEX idx_orders_status(status), INDEX idx_orders_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS order_items (id INT AUTO_INCREMENT PRIMARY KEY, order_id INT NOT NULL, product_id INT NOT NULL, product_name VARCHAR(180) NOT NULL, size VARCHAR(30) NOT NULL, quantity INT NOT NULL, unit_price DECIMAL(10,2) NOT NULL, INDEX idx_items_order(order_id), FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE, FOREIGN KEY (product_id) REFERENCES products(id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS order_items (id INT AUTO_INCREMENT PRIMARY KEY, order_id INT NOT NULL, product_id INT NULL, accessory_id INT NULL, product_name VARCHAR(180) NOT NULL, size VARCHAR(30) NOT NULL, quantity INT NOT NULL, unit_price DECIMAL(10,2) NOT NULL, INDEX idx_items_order(order_id), FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE, FOREIGN KEY (product_id) REFERENCES products(id), FOREIGN KEY (accessory_id) REFERENCES accessories(id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS admins (id INT AUTO_INCREMENT PRIMARY KEY, email VARCHAR(255) NOT NULL UNIQUE, password_hash VARCHAR(255) NOT NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, last_login DATETIME) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS admin_logs (id INT AUTO_INCREMENT PRIMARY KEY, admin_id INT NULL, action VARCHAR(80) NOT NULL, entity VARCHAR(80) NOT NULL, entity_id INT, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, INDEX idx_logs_created(created_at), FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE SET NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 -- Схема MariaDB: сначала создаём базу, затем таблицы каталога и заказов.
 -- PRIMARY KEY определяет запись, FOREIGN KEY связывает сущности, индексы ускоряют выборки.
 
 START TRANSACTION;
--- brands: 7 rows
+-- brands: 11 rows
 INSERT INTO `brands` (`id`, `name`, `slug`, `country`, `description`, `logo_path`) VALUES (1, 'Maison Margiela', 'maison-margiela', 'International', 'A considered study in silhouette, material and movement.', NULL);
 INSERT INTO `brands` (`id`, `name`, `slug`, `country`, `description`, `logo_path`) VALUES (2, 'Balenciaga', 'balenciaga', 'International', 'A considered study in silhouette, material and movement.', NULL);
 INSERT INTO `brands` (`id`, `name`, `slug`, `country`, `description`, `logo_path`) VALUES (3, 'Rick Owens', 'rick-owens', 'International', 'A considered study in silhouette, material and movement.', NULL);
@@ -27,41 +29,55 @@ INSERT INTO `brands` (`id`, `name`, `slug`, `country`, `description`, `logo_path
 INSERT INTO `brands` (`id`, `name`, `slug`, `country`, `description`, `logo_path`) VALUES (5, 'Raf Simons', 'raf-simons', 'International', 'A considered study in silhouette, material and movement.', NULL);
 INSERT INTO `brands` (`id`, `name`, `slug`, `country`, `description`, `logo_path`) VALUES (6, 'Comme des Garçons', 'comme-des-garçons', 'International', 'A considered study in silhouette, material and movement.', NULL);
 INSERT INTO `brands` (`id`, `name`, `slug`, `country`, `description`, `logo_path`) VALUES (7, 'Carol Christian Poell', 'carol-christian-poell', 'International', 'A considered study in silhouette, material and movement.', NULL);
--- categories: 4 rows
+INSERT INTO `brands` (`id`, `name`, `slug`, `country`, `description`, `logo_path`) VALUES (26, 'Chrome Hearts', 'chrome-hearts', 'International', 'Signature accessories and considered objects.', NULL);
+INSERT INTO `brands` (`id`, `name`, `slug`, `country`, `description`, `logo_path`) VALUES (27, 'Prada', 'prada', 'International', 'Signature accessories and considered objects.', NULL);
+INSERT INTO `brands` (`id`, `name`, `slug`, `country`, `description`, `logo_path`) VALUES (33, 'Off-White', 'off-white', 'International', 'A considered study in silhouette, material and movement.', NULL);
+INSERT INTO `brands` (`id`, `name`, `slug`, `country`, `description`, `logo_path`) VALUES (34, 'Ray-Ban', 'ray-ban', 'International', 'A considered study in silhouette, material and movement.', NULL);
+-- categories: 5 rows
 INSERT INTO `categories` (`id`, `name`, `slug`) VALUES (1, 'Outerwear', 'outerwear');
 INSERT INTO `categories` (`id`, `name`, `slug`) VALUES (2, 'Trousers', 'trousers');
 INSERT INTO `categories` (`id`, `name`, `slug`) VALUES (3, 'Shoes', 'shoes');
 INSERT INTO `categories` (`id`, `name`, `slug`) VALUES (4, 'Shirts', 'shirts');
--- products: 28 rows
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (1, 1, 1, 'Maison Margiela Edition Coat', 'maison-margiela-edition-coat', 1280.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (2, 1, 2, 'Maison Margiela Archive Trouser', 'maison-margiela-archive-trouser', 690.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (3, 1, 3, 'Maison Margiela Sculpted Sneaker', 'maison-margiela-sculpted-sneaker', 795.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (4, 1, 4, 'Maison Margiela Studio Shirt', 'maison-margiela-studio-shirt', 425.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (5, 2, 1, 'Balenciaga Edition Coat', 'balenciaga-edition-coat', 2190.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (6, 2, 2, 'Balenciaga Archive Trouser', 'balenciaga-archive-trouser', 1150.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (7, 2, 3, 'Balenciaga Sculpted Sneaker', 'balenciaga-sculpted-sneaker', 1090.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (8, 2, 4, 'Balenciaga Studio Shirt', 'balenciaga-studio-shirt', 790.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (9, 3, 1, 'Rick Owens Edition Coat', 'rick-owens-edition-coat', 1890.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (10, 3, 2, 'Rick Owens Archive Trouser', 'rick-owens-archive-trouser', 930.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (11, 3, 3, 'Rick Owens Sculpted Sneaker', 'rick-owens-sculpted-sneaker', 1175.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (12, 3, 4, 'Rick Owens Studio Shirt', 'rick-owens-studio-shirt', 620.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (13, 4, 1, 'Yohji Yamamoto Edition Coat', 'yohji-yamamoto-edition-coat', 1650.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (14, 4, 2, 'Yohji Yamamoto Archive Trouser', 'yohji-yamamoto-archive-trouser', 760.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (15, 4, 3, 'Yohji Yamamoto Sculpted Sneaker', 'yohji-yamamoto-sculpted-sneaker', 680.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (16, 4, 4, 'Yohji Yamamoto Studio Shirt', 'yohji-yamamoto-studio-shirt', 510.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (17, 5, 1, 'Raf Simons Edition Coat', 'raf-simons-edition-coat', 1450.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (18, 5, 2, 'Raf Simons Archive Trouser', 'raf-simons-archive-trouser', 850.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (19, 5, 3, 'Raf Simons Sculpted Sneaker', 'raf-simons-sculpted-sneaker', 970.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (20, 5, 4, 'Raf Simons Studio Shirt', 'raf-simons-studio-shirt', 580.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (21, 6, 1, 'Comme des Garçons Edition Coat', 'comme-des-garçons-edition-coat', 1320.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (22, 6, 2, 'Comme des Garçons Archive Trouser', 'comme-des-garçons-archive-trouser', 715.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (23, 6, 3, 'Comme des Garçons Sculpted Sneaker', 'comme-des-garçons-sculpted-sneaker', 640.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (24, 6, 4, 'Comme des Garçons Studio Shirt', 'comme-des-garçons-studio-shirt', 490.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (25, 7, 1, 'Carol Christian Poell Edition Coat', 'carol-christian-poell-edition-coat', 2890.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (26, 7, 2, 'Carol Christian Poell Archive Trouser', 'carol-christian-poell-archive-trouser', 1480.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (27, 7, 3, 'Carol Christian Poell Sculpted Sneaker', 'carol-christian-poell-sculpted-sneaker', 1590.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
-INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (28, 7, 4, 'Carol Christian Poell Studio Shirt', 'carol-christian-poell-studio-shirt', 940.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
--- product_images: 26 rows
+INSERT INTO `categories` (`id`, `name`, `slug`) VALUES (5, 'Jewelry', 'jewelry');
+-- products: 37 rows
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (1, 1, 1, 'Maison Margiela Edition Coat', 'maison-margiela-edition-coat', 3200.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (2, 1, 2, 'Maison Margiela Archive Trouser', 'maison-margiela-archive-trouser', 1250.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (3, 1, 3, 'Maison Margiela Sculpted Sneaker', 'maison-margiela-sculpted-sneaker', 980.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (4, 1, 4, 'Maison Margiela Studio Shirt', 'maison-margiela-studio-shirt', 620.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (5, 2, 1, 'Balenciaga Edition Coat', 'balenciaga-edition-coat', 4500.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (6, 2, 2, 'Balenciaga Archive Trouser', 'balenciaga-archive-trouser', 2100.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (7, 2, 3, 'Balenciaga Sculpted Sneaker', 'balenciaga-sculpted-sneaker', 1450.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (8, 2, 4, 'Balenciaga Studio Shirt', 'balenciaga-studio-shirt', 950.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (9, 3, 1, 'Rick Owens Edition Coat', 'rick-owens-edition-coat', 3900.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (10, 3, 2, 'Rick Owens Archive Trouser', 'rick-owens-archive-trouser', 1800.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (11, 3, 3, 'Rick Owens Sculpted Sneaker', 'rick-owens-sculpted-sneaker', 1650.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (12, 3, 4, 'Rick Owens Studio Shirt', 'rick-owens-studio-shirt', 850.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (13, 4, 1, 'Yohji Yamamoto Edition Coat', 'yohji-yamamoto-edition-coat', 3500.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (14, 4, 2, 'Yohji Yamamoto Archive Trouser', 'yohji-yamamoto-archive-trouser', 1550.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (15, 4, 3, 'Yohji Yamamoto Sculpted Sneaker', 'yohji-yamamoto-sculpted-sneaker', 1200.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (16, 4, 4, 'Yohji Yamamoto Studio Shirt', 'yohji-yamamoto-studio-shirt', 760.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (17, 5, 1, 'Raf Simons Edition Coat', 'raf-simons-edition-coat', 3100.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (18, 5, 2, 'Raf Simons Archive Trouser', 'raf-simons-archive-trouser', 1700.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (19, 5, 3, 'Raf Simons Sculpted Sneaker', 'raf-simons-sculpted-sneaker', 1350.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (20, 5, 4, 'Raf Simons Studio Shirt', 'raf-simons-studio-shirt', 820.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (21, 6, 1, 'Comme des Garçons Edition Coat', 'comme-des-garçons-edition-coat', 2800.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (22, 6, 2, 'Comme des Garçons Archive Trouser', 'comme-des-garçons-archive-trouser', 1350.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (23, 6, 3, 'Comme des Garçons Sculpted Sneaker', 'comme-des-garçons-sculpted-sneaker', 1050.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (24, 6, 4, 'Comme des Garçons Studio Shirt', 'comme-des-garçons-studio-shirt', 690.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (25, 7, 1, 'Carol Christian Poell Edition Coat', 'carol-christian-poell-edition-coat', 5200.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (26, 7, 2, 'Carol Christian Poell Archive Trouser', 'carol-christian-poell-archive-trouser', 2400.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (27, 7, 3, 'Carol Christian Poell Sculpted Sneaker', 'carol-christian-poell-sculpted-sneaker', 2100.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (28, 7, 4, 'Carol Christian Poell Studio Shirt', 'carol-christian-poell-studio-shirt', 1200.00, 'A quiet, precise object designed for an intentional wardrobe.', 'published', '2026-11-09 15:29:45');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (52, 26, 5, 'Baby Fat Cross Pendant', 'baby-fat-cross-pendant', 1000.00, 'Cross pendant in .925 sterling silver with the brand\'s signature gothic styling.', 'published', '2026-11-17 11:43:52');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (53, 26, 5, 'Paper Chain Bracelet', 'paper-chain-bracelet', 900.00, 'Link bracelet in .925 sterling silver, one of the label\'s best-known chain designs.', 'published', '2026-11-17 11:43:52');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (54, 26, 5, 'Dagger Ring', 'dagger-ring', 750.00, 'Sterling silver ring with the dagger motif.', 'published', '2026-11-17 11:43:52');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (55, 26, 5, 'Scroll Band Ring', 'scroll-band-ring', 600.00, 'Sterling silver band ring with the scroll pattern.', 'published', '2026-11-17 11:43:52');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (57, 1, 5, 'Numerical Logo Ring', 'numerical-logo-ring', 250.00, 'Ring engraved with the house\'s signature numbers (0-23).', 'published', '2026-11-17 11:43:52');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (58, 1, 5, 'Numerical Logo Bracelet', 'numerical-logo-bracelet', 300.00, 'Bracelet featuring the Margiela numerical logo.', 'published', '2026-11-17 11:43:52');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (60, 27, 5, 'Eternal Gold Pendant Necklace', 'eternal-gold-pendant-necklace', 2000.00, 'Gold pendant necklace from the Prada Fine Jewelry Eternal Gold collection with the triangle logo.', 'published', '2026-11-17 11:43:52');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (61, 27, 5, 'Eternal Gold Ring', 'eternal-gold-ring', 1500.00, 'Gold ring from the Eternal Gold collection with the triangle logo.', 'published', '2026-11-17 11:43:52');
+INSERT INTO `products` (`id`, `brand_id`, `category_id`, `name`, `slug`, `price`, `description`, `status`, `created_at`) VALUES (62, 27, 5, 'Eternal Gold Earrings', 'eternal-gold-earrings', 1800.00, 'Gold earrings from the Eternal Gold collection with the triangle logo.', 'published', '2026-11-17 11:43:52');
+-- product_images: 35 rows
 INSERT INTO `product_images` (`id`, `product_id`, `path`, `thumb_path`, `position`, `is_primary`) VALUES (7, 5, 'img/products/balenciaga/balenciaga-edition-coat-official-reference.webp', 'img/products/balenciaga/balenciaga-edition-coat-official-reference-thumb.webp', 0, 1);
 INSERT INTO `product_images` (`id`, `product_id`, `path`, `thumb_path`, `position`, `is_primary`) VALUES (8, 6, 'img/products/balenciaga/balenciaga-archive-trouser-official-reference.webp', 'img/products/balenciaga/balenciaga-archive-trouser-official-reference-thumb.webp', 0, 1);
 INSERT INTO `product_images` (`id`, `product_id`, `path`, `thumb_path`, `position`, `is_primary`) VALUES (9, 7, 'img/products/balenciaga/balenciaga-sculpted-sneaker-official-reference.webp', 'img/products/balenciaga/balenciaga-sculpted-sneaker-official-reference-thumb.webp', 0, 1);
@@ -88,10 +104,19 @@ INSERT INTO `product_images` (`id`, `product_id`, `path`, `thumb_path`, `positio
 INSERT INTO `product_images` (`id`, `product_id`, `path`, `thumb_path`, `position`, `is_primary`) VALUES (31, 15, 'img/products/yohji-yamamoto/yohji-yamamoto-sculpted-sneaker-task-reference.webp', 'img/products/yohji-yamamoto/yohji-yamamoto-sculpted-sneaker-task-reference-thumb.webp', 0, 1);
 INSERT INTO `product_images` (`id`, `product_id`, `path`, `thumb_path`, `position`, `is_primary`) VALUES (32, 16, 'img/products/yohji-yamamoto/yohji-yamamoto-studio-shirt-task-reference.webp', 'img/products/yohji-yamamoto/yohji-yamamoto-studio-shirt-task-reference-thumb.webp', 0, 1);
 INSERT INTO `product_images` (`id`, `product_id`, `path`, `thumb_path`, `position`, `is_primary`) VALUES (33, 8, 'img/products/balenciaga/balenciaga-studio-shirt-task-reference.webp', 'img/products/balenciaga/balenciaga-studio-shirt-task-reference-thumb.webp', 0, 1);
--- product_sizes: 140 rows
+INSERT INTO `product_images` (`id`, `product_id`, `path`, `thumb_path`, `position`, `is_primary`) VALUES (50, 52, 'assets/chrome-hearts/baby-fat-cross-pendant.jpg', 'assets/chrome-hearts/baby-fat-cross-pendant.jpg', 0, 1);
+INSERT INTO `product_images` (`id`, `product_id`, `path`, `thumb_path`, `position`, `is_primary`) VALUES (51, 53, 'assets/chrome-hearts/paper-chain-bracelet.jpg', 'assets/chrome-hearts/paper-chain-bracelet.jpg', 0, 1);
+INSERT INTO `product_images` (`id`, `product_id`, `path`, `thumb_path`, `position`, `is_primary`) VALUES (52, 54, 'assets/chrome-hearts/dagger-ring.jpg', 'assets/chrome-hearts/dagger-ring.jpg', 0, 1);
+INSERT INTO `product_images` (`id`, `product_id`, `path`, `thumb_path`, `position`, `is_primary`) VALUES (53, 55, 'assets/chrome-hearts/scroll-band-ring.jpg', 'assets/chrome-hearts/scroll-band-ring.jpg', 0, 1);
+INSERT INTO `product_images` (`id`, `product_id`, `path`, `thumb_path`, `position`, `is_primary`) VALUES (55, 57, 'assets/maison-margiela/numerical-logo-ring.jpg', 'assets/maison-margiela/numerical-logo-ring.jpg', 0, 1);
+INSERT INTO `product_images` (`id`, `product_id`, `path`, `thumb_path`, `position`, `is_primary`) VALUES (56, 58, 'assets/maison-margiela/numerical-logo-bracelet.jpg', 'assets/maison-margiela/numerical-logo-bracelet.jpg', 0, 1);
+INSERT INTO `product_images` (`id`, `product_id`, `path`, `thumb_path`, `position`, `is_primary`) VALUES (58, 60, 'assets/prada/eternal-gold-pendant-necklace.jpg', 'assets/prada/eternal-gold-pendant-necklace.jpg', 0, 1);
+INSERT INTO `product_images` (`id`, `product_id`, `path`, `thumb_path`, `position`, `is_primary`) VALUES (59, 61, 'assets/prada/eternal-gold-ring.jpg', 'assets/prada/eternal-gold-ring.jpg', 0, 1);
+INSERT INTO `product_images` (`id`, `product_id`, `path`, `thumb_path`, `position`, `is_primary`) VALUES (60, 62, 'assets/prada/eternal-gold-earrings.jpg', 'assets/prada/eternal-gold-earrings.jpg', 0, 1);
+-- product_sizes: 149 rows
 INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (1, 1, 'XS', 6);
-INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (2, 1, 'S', 6);
-INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (3, 1, 'M', 5);
+INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (2, 1, 'S', 5);
+INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (3, 1, 'M', 4);
 INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (4, 1, 'L', 6);
 INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (5, 1, 'XL', 6);
 INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (6, 2, 'XS', 7);
@@ -111,7 +136,7 @@ INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (19, 4,
 INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (20, 4, 'XL', 9);
 INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (21, 5, 'XS', 6);
 INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (22, 5, 'S', 6);
-INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (23, 5, 'M', 6);
+INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (23, 5, 'M', 5);
 INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (24, 5, 'L', 6);
 INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (25, 5, 'XL', 5);
 INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (26, 6, 'XS', 7);
@@ -220,7 +245,7 @@ INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (128, 2
 INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (129, 26, 'L', 7);
 INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (130, 26, 'XL', 7);
 INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (131, 27, '39', 8);
-INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (132, 27, '40', 8);
+INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (132, 27, '40', 7);
 INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (133, 27, '41', 8);
 INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (134, 27, '42', 8);
 INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (135, 27, '43', 8);
@@ -229,7 +254,27 @@ INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (137, 2
 INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (138, 28, 'M', 9);
 INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (139, 28, 'L', 9);
 INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (140, 28, 'XL', 9);
--- orders: 7 rows
+INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (164, 52, 'One size', 5);
+INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (165, 53, 'One size', 5);
+INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (166, 54, 'One size', 5);
+INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (167, 55, 'One size', 5);
+INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (169, 57, 'One size', 5);
+INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (170, 58, 'One size', 5);
+INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (172, 60, 'One size', 5);
+INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (173, 61, 'One size', 5);
+INSERT INTO `product_sizes` (`id`, `product_id`, `size`, `stock`) VALUES (174, 62, 'One size', 5);
+-- accessories: 10 rows
+INSERT INTO `accessories` (`id`, `name`, `price`, `image`, `description`, `designer_id`) VALUES (2, 'CH Plus Bracelet', 3200.0, 'https://th.bing.com/th/id/R.21261eae8955d699310df75713b179e0?rik=K1XyxER7VpqTtQ&riu=http%3a%2f%2fypcollective.com%2fcdn%2fshop%2ffiles%2ftiny-ch-plus-bracelet-sapphire.jpg%3fv%3d1761860420&ehk=W925BE37%2f7rBLeTZeXHcIjj9m9hnWVwu8uNN9dUq1MA%3d&risl=&pid=ImgRaw&r=0', 'Серебряный браслет с фирменным мотивом CH Plus.', 26);
+INSERT INTO `accessories` (`id`, `name`, `price`, `image`, `description`, `designer_id`) VALUES (3, 'Cemetery Cross Ring', 2400.0, 'https://th.bing.com/th/id/OIP.mfazgxci6B-OpZf2YTLf7AHaJQ?w=162&h=203&c=7&r=0&o=7&pid=1.7&rm=3', 'Кольцо из стерлингового серебра с мотивом Cemetery Cross.', 26);
+INSERT INTO `accessories` (`id`, `name`, `price`, `image`, `description`, `designer_id`) VALUES (4, 'Four Stitches Card Holder', 680.0, 'https://tse1.mm.bing.net/th/id/OIP.lKLSNtHVrHQS44ZvI0W-wQHaLH?r=0&rs=1&pid=ImgDetMain&o=7&rm=3', 'Кожаный кардхолдер с четырьмя белыми стежками Maison Margiela.', 1);
+INSERT INTO `accessories` (`id`, `name`, `price`, `image`, `description`, `designer_id`) VALUES (5, 'Re-Nylon Bucket Hat', 1150.0, 'https://media.johnlewiscontent.com/i/JohnLewis/114424702?fmt=auto&$background-off-white$', 'Лаконичная панама из фирменного переработанного Re-Nylon.', 27);
+INSERT INTO `accessories` (`id`, `name`, `price`, `image`, `description`, `designer_id`) VALUES (6, 'Saffiano Card Holder', 820.0, 'https://media.neimanmarcus.com/f_auto,q_auto:low,ar_4:5,c_fill,dpr_2.0,w_790/01/nm_5052773_100426_a', 'Кардхолдер из фактурной кожи Saffiano с эмблемой Prada.', 27);
+INSERT INTO `accessories` (`id`, `name`, `price`, `image`, `description`, `designer_id`) VALUES (7, 'See You In Tea Sunglasses', 1200.0, '/assets/chrome-hearts/see-you-in-tea-sunglasses.jpg', 'Солнцезащитные очки Chrome Hearts с массивными дужками, украшенными серебряными деталями.', 26);
+INSERT INTO `accessories` (`id`, `name`, `price`, `image`, `description`, `designer_id`) VALUES (8, 'Four-Stitch Card Holder', 250.0, '/assets/maison-margiela/four-stitch-card-holder.jpg', 'Кожаный картхолдер с фирменной белой строчкой в четыре стежка.', 1);
+INSERT INTO `accessories` (`id`, `name`, `price`, `image`, `description`, `designer_id`) VALUES (9, 'Saffiano Leather Card Holder', 300.0, '/assets/prada/saffiano-leather-card-holder.jpg', 'Картхолдер из кожи Saffiano с эмалированным металлическим логотипом-треугольником.', 27);
+INSERT INTO `accessories` (`id`, `name`, `price`, `image`, `description`, `designer_id`) VALUES (10, 'Industrial Belt', 280.0, '/assets/off-white/industrial-belt.jpg', 'Ремень из жёлтой ленты с надписью INDUSTRIAL и металлической пряжкой, один из символов бренда.', 33);
+INSERT INTO `accessories` (`id`, `name`, `price`, `image`, `description`, `designer_id`) VALUES (11, 'Wayfarer RB2140', 170.0, '/assets/ray-ban/wayfarer-rb2140.jpg', 'Классические солнцезащитные очки Wayfarer в оправе из ацетата.', 34);
+-- orders: 11 rows
 INSERT INTO `orders` (`id`, `customer_name`, `email`, `phone`, `address`, `total`, `status`, `created_at`) VALUES (1, 'Покупатель #1', 'buyer-1@example.invalid', NULL, 'Адрес скрыт', 565.00, 'new', '2026-11-09 15:39:30');
 INSERT INTO `orders` (`id`, `customer_name`, `email`, `phone`, `address`, `total`, `status`, `created_at`) VALUES (2, 'Покупатель #2', 'buyer-2@example.invalid', NULL, 'Адрес скрыт', 565.00, 'cancelled', '2026-11-09 15:39:39');
 INSERT INTO `orders` (`id`, `customer_name`, `email`, `phone`, `address`, `total`, `status`, `created_at`) VALUES (3, 'Покупатель #3', 'buyer-3@example.invalid', NULL, 'Адрес скрыт', 565.00, 'cancelled', '2026-11-09 15:40:59');
@@ -237,28 +282,41 @@ INSERT INTO `orders` (`id`, `customer_name`, `email`, `phone`, `address`, `total
 INSERT INTO `orders` (`id`, `customer_name`, `email`, `phone`, `address`, `total`, `status`, `created_at`) VALUES (12, 'Покупатель #12', 'buyer-12@example.invalid', NULL, 'Адрес скрыт', 7360.00, 'new', '2026-11-09 17:35:12');
 INSERT INTO `orders` (`id`, `customer_name`, `email`, `phone`, `address`, `total`, `status`, `created_at`) VALUES (13, 'Покупатель #13', 'buyer-13@example.invalid', NULL, 'Адрес скрыт', 1090.00, 'new', '2026-11-09 17:36:24');
 INSERT INTO `orders` (`id`, `customer_name`, `email`, `phone`, `address`, `total`, `status`, `created_at`) VALUES (14, 'Покупатель #14', 'buyer-14@example.invalid', NULL, 'Адрес скрыт', 2180.00, 'new', '2026-11-09 17:50:37');
--- order_items: 18 rows
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (1, 1, 1, 'Maison Margiela Edition Coat', 'M', 1, 565.00);
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (2, 2, 1, 'Maison Margiela Edition Coat', 'M', 1, 565.00);
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (3, 3, 1, 'Maison Margiela Edition Coat', 'M', 1, 565.00);
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (11, 11, 14, 'Yohji Yamamoto Archive Trouser', 'S', 1, 760.00);
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (12, 11, 16, 'Yohji Yamamoto Studio Shirt', 'S', 1, 510.00);
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (13, 11, 20, 'Raf Simons Studio Shirt', 'XL', 1, 580.00);
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (14, 11, 28, 'Carol Christian Poell Studio Shirt', 'S', 1, 940.00);
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (15, 11, 5, 'Balenciaga Edition Coat', 'XL', 1, 2190.00);
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (16, 12, 17, 'Raf Simons Edition Coat', 'S', 1, 1450.00);
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (17, 12, 17, 'Raf Simons Edition Coat', 'XL', 1, 1450.00);
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (18, 12, 23, 'Comme des Garçons Sculpted Sneaker', '43', 1, 640.00);
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (19, 12, 6, 'Balenciaga Archive Trouser', 'L', 1, 1150.00);
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (20, 12, 7, 'Balenciaga Sculpted Sneaker', '40', 1, 1090.00);
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (21, 12, 8, 'Balenciaga Studio Shirt', 'XL', 1, 790.00);
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (22, 12, 8, 'Balenciaga Studio Shirt', 'XS', 1, 790.00);
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (23, 13, 7, 'Balenciaga Sculpted Sneaker', '41', 1, 1090.00);
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (24, 14, 7, 'Balenciaga Sculpted Sneaker', '39', 1, 1090.00);
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (25, 14, 7, 'Balenciaga Sculpted Sneaker', '41', 1, 1090.00);
+INSERT INTO `orders` (`id`, `customer_name`, `email`, `phone`, `address`, `total`, `status`, `created_at`) VALUES (18, 'Покупатель #18', 'buyer-18@example.invalid', NULL, 'Адрес скрыт', 1280.00, 'new', '2026-11-14 12:02:00');
+INSERT INTO `orders` (`id`, `customer_name`, `email`, `phone`, `address`, `total`, `status`, `created_at`) VALUES (30, 'Покупатель #30', 'buyer-30@example.invalid', NULL, 'Адрес скрыт', 2100.00, 'new', '2026-11-17 11:39:57');
+INSERT INTO `orders` (`id`, `customer_name`, `email`, `phone`, `address`, `total`, `status`, `created_at`) VALUES (32, 'Покупатель #32', 'buyer-32@example.invalid', NULL, 'Адрес скрыт', 20500.00, 'new', '2026-11-17 12:19:00');
+INSERT INTO `orders` (`id`, `customer_name`, `email`, `phone`, `address`, `total`, `status`, `created_at`) VALUES (33, 'Покупатель #33', 'buyer-33@example.invalid', NULL, 'Адрес скрыт', 4130.00, 'new', '2026-11-17 12:24:11');
+-- order_items: 27 rows
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (1, 1, 1, NULL, 'Maison Margiela Edition Coat', 'M', 1, 565.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (2, 2, 1, NULL, 'Maison Margiela Edition Coat', 'M', 1, 565.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (3, 3, 1, NULL, 'Maison Margiela Edition Coat', 'M', 1, 565.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (11, 11, 14, NULL, 'Yohji Yamamoto Archive Trouser', 'S', 1, 760.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (12, 11, 16, NULL, 'Yohji Yamamoto Studio Shirt', 'S', 1, 510.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (13, 11, 20, NULL, 'Raf Simons Studio Shirt', 'XL', 1, 580.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (14, 11, 28, NULL, 'Carol Christian Poell Studio Shirt', 'S', 1, 940.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (15, 11, 5, NULL, 'Balenciaga Edition Coat', 'XL', 1, 2190.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (16, 12, 17, NULL, 'Raf Simons Edition Coat', 'S', 1, 1450.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (17, 12, 17, NULL, 'Raf Simons Edition Coat', 'XL', 1, 1450.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (18, 12, 23, NULL, 'Comme des Garçons Sculpted Sneaker', '43', 1, 640.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (19, 12, 6, NULL, 'Balenciaga Archive Trouser', 'L', 1, 1150.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (20, 12, 7, NULL, 'Balenciaga Sculpted Sneaker', '40', 1, 1090.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (21, 12, 8, NULL, 'Balenciaga Studio Shirt', 'XL', 1, 790.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (22, 12, 8, NULL, 'Balenciaga Studio Shirt', 'XS', 1, 790.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (23, 13, 7, NULL, 'Balenciaga Sculpted Sneaker', '41', 1, 1090.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (24, 14, 7, NULL, 'Balenciaga Sculpted Sneaker', '39', 1, 1090.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (25, 14, 7, NULL, 'Balenciaga Sculpted Sneaker', '41', 1, 1090.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (29, 18, 1, NULL, 'Maison Margiela Edition Coat', 'M', 1, 1280.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (41, 30, 27, NULL, 'Carol Christian Poell Sculpted Sneaker', '40', 1, 2100.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (43, 32, 1, NULL, 'Maison Margiela Edition Coat', 'S', 1, 3200.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (44, 32, 5, NULL, 'Balenciaga Edition Coat', 'M', 1, 4500.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (45, 32, NULL, 2, 'CH Plus Bracelet', 'One size', 1, 3200.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (46, 32, NULL, 3, 'Cemetery Cross Ring', 'One size', 4, 2400.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (47, 33, NULL, 2, 'CH Plus Bracelet', 'One size', 1, 3200.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (48, 33, NULL, 4, 'Four Stitches Card Holder', 'One size', 1, 680.00);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `accessory_id`, `product_name`, `size`, `quantity`, `unit_price`) VALUES (49, 33, NULL, 8, 'Four-Stitch Card Holder', 'One size', 1, 250.00);
 -- admins: 1 rows
-INSERT INTO `admins` (`id`, `email`, `password_hash`, `created_at`, `last_login`) VALUES (1, 'admin@example.com', 'scrypt:32768:8:1$iLDHyTbwj6g4OrMA$0284dbb413efe56b6afb722431ae7342651326bb0289a595d936d1f44335fabc77d8772e625fa453888f8d7c72b787468a78e936725d3a9b82d17cfbae17bc9c', '2026-11-09 15:29:45', NULL);
--- admin_logs: 20 rows
+INSERT INTO `admins` (`id`, `email`, `password_hash`, `created_at`, `last_login`) VALUES (1, 'admin@example.com', 'scrypt:32768:8:1$EkhfCZnCwxxEnGFg$dfa4f21aa0ad3e1262d5cf9479f2ce8964e0d45909a10f4073bb97838bc757d5c7c46a6ef0fa93f2a3b66f60f1d2624f92e491426a3ff2a1f9b6c3ee7a41732d', '2026-11-09 15:29:45', NULL);
+-- admin_logs: 48 rows
 INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (1, 1, 'create', 'brand', NULL, '2026-11-09 15:39:39');
 INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (2, 1, 'create', 'product', 29, '2026-11-09 15:39:39');
 INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (3, 1, 'update', 'order', 2, '2026-11-09 15:39:39');
@@ -279,4 +337,32 @@ INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `cr
 INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (24, 1, 'update', 'order', 9, '2026-11-09 17:01:45');
 INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (25, 1, 'create', 'brand', NULL, '2026-11-09 17:20:45');
 INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (27, 1, 'update', 'order', 10, '2026-11-09 17:20:45');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (28, 1, 'create', 'brand', NULL, '2026-11-14 11:50:08');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (30, 1, 'update', 'order', 15, '2026-11-14 11:50:08');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (31, 1, 'create', 'brand', NULL, '2026-11-14 11:51:04');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (33, 1, 'update', 'order', 16, '2026-11-14 11:51:04');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (34, 1, 'create', 'brand', NULL, '2026-11-14 11:59:40');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (36, 1, 'update', 'order', 17, '2026-11-14 11:59:41');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (37, 1, 'create', 'brand', NULL, '2026-11-14 12:02:41');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (39, 1, 'update', 'order', 19, '2026-11-14 12:02:41');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (40, 1, 'create', 'brand', NULL, '2026-11-14 12:03:04');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (42, 1, 'update', 'order', 20, '2026-11-14 12:03:04');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (43, 1, 'create', 'brand', NULL, '2026-11-14 12:04:12');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (45, 1, 'update', 'order', 21, '2026-11-14 12:04:12');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (46, 1, 'create', 'brand', NULL, '2026-11-14 12:24:19');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (48, 1, 'update', 'order', 22, '2026-11-14 12:24:19');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (49, 1, 'create', 'brand', NULL, '2026-11-14 12:25:21');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (51, 1, 'update', 'order', 23, '2026-11-14 12:25:21');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (52, 1, 'create', 'brand', NULL, '2026-11-14 12:25:49');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (54, 1, 'update', 'order', 24, '2026-11-14 12:25:49');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (55, 1, 'create', 'brand', NULL, '2026-11-14 12:37:10');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (57, 1, 'update', 'order', 25, '2026-11-14 12:37:10');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (58, 1, 'create', 'brand', NULL, '2026-11-14 12:37:51');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (60, 1, 'update', 'order', 26, '2026-11-14 12:37:51');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (61, 1, 'create', 'brand', NULL, '2026-11-14 12:38:22');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (63, 1, 'update', 'order', 27, '2026-11-14 12:38:22');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (64, 1, 'create', 'brand', NULL, '2026-11-14 12:41:16');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (66, 1, 'update', 'order', 28, '2026-11-14 12:41:16');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (67, 1, 'create', 'brand', NULL, '2026-11-14 12:49:56');
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `entity`, `entity_id`, `created_at`) VALUES (69, 1, 'update', 'order', 29, '2026-11-14 12:49:56');
 COMMIT;

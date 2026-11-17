@@ -13,7 +13,8 @@
               <small>{% if item.type == 'accessory' %}Аксессуар{% else %}{{ item.size.size }} · {{ item.quantity }} шт.{% endif %}</small>
             </div>
             <span>{{ item.line }} €</span>
-            <button class="cart-remove text-link" data-key="{{ item.key }}" aria-label="Удалить {{ item.product.name }}">Удалить</button>
+            {# Для аксессуара и обычного товара используется соответствующее имя из строки корзины. #}
+            <button class="cart-remove text-link" data-key="{{ item.key }}" aria-label="Удалить {{ item.accessory.name if item.type == 'accessory' else item.product.name }}">Удалить</button>
           </div>
         {% endfor %}
       </div>
@@ -25,4 +26,5 @@
     {% endif %}
   </section>
 {% endblock %}
+{# Назначение: эта разметка также используется shop.js для наполнения выдвижной корзины. #}
 {# Полная страница корзины служит также источником содержимого для выдвижной панели. #}

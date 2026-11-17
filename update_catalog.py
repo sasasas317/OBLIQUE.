@@ -1,3 +1,4 @@
+# Скрипт загружает подписанные изображения и связывает их с ProductImage.
 """Import product images named in task.md into the local catalog.
 
 Run with `venv/Scripts/python.exe update_catalog.py`. Existing product images and
@@ -16,12 +17,13 @@ from PIL import Image, UnidentifiedImageError
 
 from app import app
 from models import Product, ProductImage, db
-from seed import PRODUCT_TYPES, SEED_PRICES
+# Источник имён брендов и украшений синхронизирован с обновлённым seed-каталогом.
+from seed import BRANDS, JEWELRY
 
 TASK = Path(__file__).with_name("image_sources.md")
 IMAGE_LINE = re.compile(r"^(https?://\S+)\s+\(([^()]+)\)\s*$")
-KINDS = {kind.lower(): kind for kind, _ in PRODUCT_TYPES}
-BRANDS = sorted(SEED_PRICES, key=len, reverse=True)
+# Подписи из image_sources.md сопоставляются с названиями реальных товаров.
+PRODUCT_NAMES = {item["name"].lower(): item["name"] for item in JEWELRY}
 
 
 def image_sources():
@@ -37,9 +39,10 @@ def image_sources():
         if not brand:
             raise ValueError(f"Unknown brand in task.md: {caption}")
         caption_kind = caption[len(brand):].lower().strip()
-        kind = KINDS.get(caption_kind)
+        # Сначала ищем точное название, затем сохраняем прежние fallback-правила.
+        kind = PRODUCT_NAMES.get(caption_kind)
         if not kind:
-            if "troust" in caption_kind or "trouser" in caption_kind:
+            if "trouser" in caption_kind:
                 kind = "Archive Trouser"
             elif "sneaker" in caption_kind:
                 kind = "Sculpted Sneaker"
@@ -95,8 +98,9 @@ def download(name, url):
 def update():
     """Загрузить отсутствующие фото, не создавая дубликаты ProductImage."""
     sources = image_sources()
-    if len(sources) != len(BRANDS) * len(PRODUCT_TYPES):
-        raise ValueError(f"Expected 28 image links in task.md, got {len(sources)}")
+    # Пустой файл источников должен завершать импорт понятной ошибкой.
+    if not sources:
+        raise ValueError("No image links found in image_sources.md")
 
     failures = []
     with app.app_context():

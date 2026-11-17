@@ -1,3 +1,4 @@
+# Все сущности приложения описаны ORM-классами ниже и связаны внешними ключами.
 """ORM-модели: таблицы каталога, заказов и учётных записей администратора."""
 
 from datetime import datetime
@@ -147,7 +148,8 @@ class Accessory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     price = db.Column(db.Numeric(10, 2), nullable=False)
-    image = db.Column(db.String(200))
+    # Поле хранит как локальные имена, так и длинные внешние URL изображений.
+    image = db.Column(db.String(1000))
     description = db.Column(db.Text)
     designer_id = db.Column(db.Integer, db.ForeignKey("brands.id", ondelete="SET NULL"))
     designer = db.relationship("Brand")

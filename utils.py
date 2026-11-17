@@ -1,3 +1,4 @@
+# Вспомогательные функции не должны зависеть от конкретного blueprint.
 """Общие функции магазина и админки: slug, журнал и обработка загрузок."""
 
 import os
@@ -11,12 +12,14 @@ from models import AdminLog, db
 
 
 def slugify(value):
+    # Нормализация имени перед использованием его в уникальном URL-slug.
     """Преобразовать название в URL-slug, сохраняя буквы Unicode."""
     value = re.sub(r"[^\w\s-]", "", value.lower(), flags=re.UNICODE)
     return re.sub(r"[-\s]+", "-", value).strip("-")
 
 
 def admin_log(action, entity, entity_id=None):
+    # Лог создаётся в текущей транзакции вызывающего административного маршрута.
     """Добавить запись в текущую транзакцию; commit делает вызывающий маршрут."""
     if current_user.is_authenticated:
         db.session.add(AdminLog(admin_id=current_user.id, action=action, entity=entity, entity_id=entity_id))
@@ -33,6 +36,7 @@ def admin_required(view):
 
 
 def save_image(file, brand_slug, product_slug, index):
+    # Изображение проверяется, конвертируется в WebP и получает миниатюру.
     """Проверить реальный тип, сохранить WebP и миниатюру, вернуть пути от static/."""
     if not file.filename.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
         raise ValueError("Разрешены только JPG, PNG и WebP")

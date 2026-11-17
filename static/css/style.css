@@ -1,3 +1,4 @@
+/* Главная таблица стилей витрины: тема, сетка, карточки и общие компоненты. */
 :root {
   --bg: #e8e3dc;
   --ink: #171717;
@@ -376,27 +377,38 @@ p {
   margin: 0 0 70px;
 }
 .product-grid {
+  /* Сетка каталога автоматически подбирает число колонок без растягивания карточек. */
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 28px;
+  /* Use the same stable tile width for Jewelry and every catalog category. */
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+.product-card {
+  /* Одинаковая высота карточек выравнивает все элементы ряда. */
+  height: 100%;
 }
 .product-visual {
+  /* Квадратный контейнер не позволяет исходным размерам фото менять сетку. */
   position: relative;
-  aspect-ratio: 3/4;
-  background: linear-gradient(145deg, #d0cbc3, #8c8984);
+  aspect-ratio: 1 / 1;
+  background: #f3f1ed;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .product-visual img {
+  /* Полное фото помещается внутрь блока без обрезки и искажения. */
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   transition: transform 0.8s var(--ease);
   display: block;
 }
 .product-card:hover .product-visual > img:first-child {
+  /* Лёгкое увеличение сохраняет существующий эффект наведения карточки. */
   transform: scale(1.05);
 }
 .second-image {
@@ -544,11 +556,15 @@ select {
   scroll-snap-align: start;
   aspect-ratio: 4/5;
   background: #cbc6bf;
+  overflow: hidden;
 }
 .gallery-slide img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  display: block;
+  object-fit: contain;
+  object-position: center;
+  background: #f3f1ed;
 }
 .product-info {
   padding-top: 80px;
@@ -862,7 +878,7 @@ select {
     text-align: left;
   }
   .gallery-slide {
-    min-width: 90vw;
+    min-width: 100%;
   }
 }
 @media (prefers-color-scheme: dark) {

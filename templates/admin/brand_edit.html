@@ -3,4 +3,5 @@
   name="csrf_token"
   value="{{ csrf_token() }}"
 ><label>Название<input name="name" value="{{ brand.name }}" required></label><label>Slug<input name="slug" value="{{ brand.slug }}" required></label><label>Страна<input name="country" value="{{ brand.country or '' }}"></label><label>Описание<textarea name="description" rows="5">{{ brand.description or '' }}</textarea></label><button class="btn">Сохранить</button></form></div>{% endblock %}
+{# Назначение: редактирование бренда и его публичного slug. #}
 {# Изменение данных бренда; slug применяется в URL его публичной страницы. #}

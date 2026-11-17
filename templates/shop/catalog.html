@@ -25,6 +25,7 @@
                                                 {% if request.args.get('category') == category.slug %}selected{% endif %}>{{ category.name }}</option>{% endfor %}
         </select>
       </label>
+      {# Назначение: каталог фильтрует опубликованные товары по поиску, бренду и категории. #}
       {# Обувь и одежда используют разные системы размеров, поэтому показываем обе. #}
       <label>
         Размер<select name="size">

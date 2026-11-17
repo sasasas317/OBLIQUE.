@@ -27,7 +27,9 @@
             <a href="{{ url_for('shop.accessory_detail', accessory_id=item.id) }}" class="accessory-card-link">
               <div class="accessory-visual">
                 {% if item.image %}
-                  <img src="{{ url_for('static', filename='img/accessories/' + item.image) }}"
+{# Назначение: отдельная витрина Accessory с фильтром цены и добавлением в корзину. #}
+{# Внешние URL выводятся напрямую, локальные изображения берутся из static. #}
+                   <img src="{{ item.image if item.image.startswith('http') else url_for('static', filename='img/accessories/' + item.image) }}"
                        alt="{{ item.name }}" loading="lazy">
                 {% else %}
                   <span class="luxury-placeholder">OBLIQUE</span>

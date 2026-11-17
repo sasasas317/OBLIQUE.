@@ -6,7 +6,9 @@
   <section class="accessory-detail section-pad">
     <div class="accessory-detail-visual glass">
       {% if accessory.image %}
-        <img src="{{ url_for('static', filename='img/accessories/' + accessory.image) }}"
+{# Назначение: detail-страница Accessory показывает изображение и данные позиции. #}
+{# Один шаблон поддерживает и внешний URL, и локальный путь изображения. #}
+         <img src="{{ accessory.image if accessory.image.startswith('http') else url_for('static', filename='img/accessories/' + accessory.image) }}"
              alt="{{ accessory.name }}">
       {% else %}
         <span class="luxury-placeholder">OBLIQUE</span>

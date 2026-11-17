@@ -1,3 +1,4 @@
+/* Дополнительные состояния, каталог аксессуаров и адаптивные правила витрины. */
 /* Дополнительные состояния: ручная светлая тема, focus и сниженная прозрачность. */
 body.light {
   --bg: #e8e3dc;
@@ -88,13 +89,17 @@ select:focus-visible {
   white-space: nowrap;
 }
 .accessories-grid {
+  /* Сетка аксессуаров сохраняет одинаковые верхние края карточек. */
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 22px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 24px;
+  align-items: start;
 }
 .accessory-card {
+  /* Карточка растягивается по высоте строки и остаётся flex-контейнером. */
   display: flex;
   min-width: 0;
+  height: 100%;
   flex-direction: column;
   padding: 14px;
   transition:
@@ -102,32 +107,40 @@ select:focus-visible {
     box-shadow 0.35s var(--ease);
 }
 .accessory-card:hover {
+  /* Сохраняем исходное движение карточки при наведении. */
   transform: translateY(-6px);
 }
 .accessory-card-link {
+  /* Ссылка занимает весь контент карточки. */
   display: block;
 }
 .accessory-visual,
 .accessory-detail-visual {
+  /* Общий фон убирает цветные полосы вокруг светлых изображений. */
   position: relative;
   overflow: hidden;
-  min-height: 280px;
-  background: linear-gradient(
-    135deg,
-    rgba(100, 31, 45, 0.18),
-    rgba(255, 255, 255, 0.32)
-  );
+  background: #f3f1ed;
 }
-.accessory-visual img,
-.accessory-detail-visual img {
+.accessory-visual {
+  /* Квадратная рамка не даёт портретным фото растягивать сетку. */
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  min-height: 0;
+}
+.accessory-visual img {
+  /* Фото сохраняет пропорции и центрируется внутри рамки. */
+  display: block;
   width: 100%;
   height: 100%;
-  min-height: 280px;
-  object-fit: cover;
+  margin: 0;
+  object-fit: contain;
+  object-position: center;
 }
 .luxury-placeholder {
+  /* Заглушка заполняет тот же блок, что и настоящее изображение. */
   display: grid;
-  min-height: 280px;
+  width: 100%;
+  height: 100%;
   place-items: center;
   color: rgba(100, 31, 45, 0.72);
   font:
@@ -144,6 +157,7 @@ select:focus-visible {
     linear-gradient(135deg, #d8c9c2, #9b7772);
 }
 .accessory-visual .price-tag {
+  /* Цена остаётся поверх изображения в правом нижнем углу. */
   position: absolute;
   right: 12px;
   bottom: 12px;
@@ -153,9 +167,11 @@ select:focus-visible {
   backdrop-filter: blur(12px);
 }
 .accessory-info {
+  /* Одинаковые внутренние отступы сохраняют ритм карточек. */
   padding: 18px 4px 12px;
 }
 .accessory-info h2 {
+  /* Название использует существующую типографику аксессуаров. */
   margin: 7px 0;
   font:
     500 1.8rem / 1 "Cormorant Garamond",
@@ -163,14 +179,21 @@ select:focus-visible {
     serif;
 }
 .accessory-info p {
+  /* Длинное описание не делает одну карточку выше соседних. */
   margin: 0;
   color: var(--muted);
   font-size: 0.82rem;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 .accessory-cart .button {
+  /* Кнопка занимает всю ширину нижней части карточки. */
   width: 100%;
 }
 .accessory-detail {
+  /* Детальная страница сохраняет две колонки на широком экране. */
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr);
   align-items: center;
@@ -178,13 +201,27 @@ select:focus-visible {
   padding-top: 150px;
 }
 .accessory-detail-visual {
-  min-height: 520px;
+  /* Детальная фотография получает стабильное соотношение сторон. */
+  width: 100%;
+  aspect-ratio: 4 / 5;
 }
-.accessory-detail-visual img,
+.accessory-detail-visual img {
+  /* Фото заполняет рамку, сохраняя исходные пропорции. */
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  object-fit: contain;
+  object-position: center;
+  background: #f3f1ed;
+}
 .accessory-detail-visual .luxury-placeholder {
-  min-height: 520px;
+  /* Заглушка детальной страницы имеет размер всей рамки. */
+  width: 100%;
+  height: 100%;
 }
 .accessory-detail-info h1 {
+  /* Заголовок не меняет заданную типографику правой колонки. */
   margin: 16px 0;
   font:
     500 clamp(3rem, 7vw, 6.5rem) / 0.9 "Cormorant Garamond",
@@ -192,6 +229,7 @@ select:focus-visible {
     serif;
 }
 .accessory-detail-info .description {
+  /* Описание ограничено по ширине и не влияет на блок изображения. */
   max-width: 430px;
   margin: 28px 0;
   color: var(--muted);
@@ -199,22 +237,33 @@ select:focus-visible {
 }
 @media (max-width: 760px) {
   .accessories-filter {
+    /* На узком экране фильтр переносится на доступную ширину. */
     width: 100%;
     flex-wrap: wrap;
   }
   .accessories-filter input {
+    /* Поле цены занимает всю строку мобильного фильтра. */
     width: 100%;
   }
   .accessories-grid,
   .accessory-detail {
+    /* На мобильном устройстве сетка и detail-блок становятся одноколоночными. */
     grid-template-columns: 1fr;
   }
   .accessory-detail {
+    /* Уменьшенный верхний отступ компенсирует мобильную шапку. */
     padding-top: 125px;
   }
   .accessory-detail-visual,
-  .accessory-detail-visual img,
   .accessory-detail-visual .luxury-placeholder {
-    min-height: 360px;
+    /* Мобильная detail-рамка сохраняет единый квадратный формат. */
+    width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+  .accessory-detail-visual img {
+    /* Мобильное фото по-прежнему заполняет рамку без обрезки. */
+    width: 100%;
+    height: 100%;
+    margin: 0;
   }
 }

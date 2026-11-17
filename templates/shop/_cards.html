@@ -11,4 +11,5 @@
   alt="{{ product.name }}, другой ракурс"
   loading="lazy"
 >{% endif %}{% else %}<span class="placeholder-mark">OBLIQUE</span><span class="placeholder-name">{{ product.name }}</span>{% endif %}<span class="price-tag glass">{{ product.price }} €</span></div><div class="product-caption"><span>{{ product.brand.name }}</span><h3>{{ product.name }}</h3><span class="arrow">↗</span></div></a></article>{% endfor %}
+{# Назначение: единая карточка товара используется в каталоге, на главной и странице бренда. #}
 {# Одна карточка на продукт: cover/миниатюра из БД, либо текстовая заглушка. #}

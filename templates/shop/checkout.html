@@ -18,4 +18,5 @@
   rows="4"
   autocomplete="street-address"
 ></textarea></label><button class="button button-dark" type="submit">Подтвердить заказ ↗</button></form><div class="order-summary glass"><span class="eyebrow">Ваш заказ</span>{% for item in items %}<p>{{ item.accessory.name if item.type == 'accessory' else item.product.name }} · {% if item.type == 'accessory' %}Аксессуар{% else %}{{ item.size.size }}{% endif %} × {{ item.quantity }} <strong>{{ item.line }} €</strong></p>{% endfor %}<div class="cart-total">Итого <strong>{{ total }} €</strong></div></div></div></section>{% endblock %}
+{# Назначение: форма checkout отправляет контактные данные и серверный итог заказа. #}
 {# CSRF защищает POST; итог и наличие товара повторно проверяются на сервере. #}
